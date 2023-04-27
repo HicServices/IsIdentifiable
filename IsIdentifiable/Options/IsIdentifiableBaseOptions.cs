@@ -1,4 +1,4 @@
-﻿using CommandLine;
+using CommandLine;
 using FAnsi;
 using IsIdentifiable.Redacting;
 using NLog;
@@ -287,7 +287,7 @@ public class IsIdentifiableBaseOptions : ITargetsFileOptions
     }
 
     /// <summary>
-    /// Performs <see cref="LoadTargets(ITargetsFileOptions, Logger, IFileSystem, out List{Target})"/> and then updates all connection strings
+    /// Performs <see cref="LoadTargets(ITargetsFileOptions, ILogger, IFileSystem, out List{Target})"/> and then updates all connection strings
     /// (e.g. <see cref="AllowlistConnectionString"/>) to use the named Target if specified
     /// </summary>
     /// <param name="targets"></param>
@@ -332,7 +332,7 @@ public class IsIdentifiableBaseOptions : ITargetsFileOptions
     /// <param name="targets"></param>
     /// <param name="fileSystem"></param>
     /// <returns></returns>
-    public static int LoadTargets(ITargetsFileOptions opts, NLog.Logger logger, IFileSystem fileSystem, out List<Target> targets)
+    public static int LoadTargets(ITargetsFileOptions opts, ILogger logger, IFileSystem fileSystem, out List<Target> targets)
     {
         var d = new Deserializer();
         targets = new List<Target>();

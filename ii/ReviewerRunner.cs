@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using FAnsi.Implementation;
@@ -8,6 +9,7 @@ using FAnsi.Implementations.Oracle;
 using FAnsi.Implementations.PostgreSql;
 using IsIdentifiable.Options;
 using IsIdentifiable.Redacting;
+using NLog;
 using Terminal.Gui;
 using YamlDotNet.Serialization;
 
@@ -18,32 +20,27 @@ public class ReviewerRunner
     private readonly IsIdentifiableBaseOptions? _analyserOpts;
     private readonly IsIdentifiableReviewerOptions _reviewerOptions;
     private readonly IFileSystem _fileSystem;
+    private readonly ILogger _logger;
+    private readonly List<Target> _targets;
+    private readonly RowUpdater _rowUpdater;
+    private readonly IgnoreRuleGenerator _ignoreRuleGenerator;
 
     public ReviewerRunner(IsIdentifiableBaseOptions? analyserOpts, IsIdentifiableReviewerOptions reviewerOptions, IFileSystem fileSystem)
     {
         _analyserOpts = analyserOpts;
         _reviewerOptions = reviewerOptions;
         _fileSystem = fileSystem;
-    }
 
-    /// <summary>
-    /// Runs the reviewer gui or redaction mode
-    /// </summary>
-    /// <returns></returns>
-    public int Run()
-    {
-        var logger = NLog.LogManager.GetCurrentClassLogger();
-
-        var returnCode = IsIdentifiableBaseOptions.LoadTargets(_reviewerOptions,logger, _fileSystem, out var targets);
-        
-        if (returnCode != 0)
-            return returnCode;
+        _logger = LogManager.GetCurrentClassLogger();
+        IsIdentifiableBaseOptions.LoadTargets(_reviewerOptions, _logger, _fileSystem, out _targets);
 
         if (_reviewerOptions.OnlyRules)
-            logger.Info("Skipping Connection Tests");
+        {
+            _logger.Info("Skipping Connection Tests");
+        }
         else
         {
-            logger.Info("Running Connection Tests");
+            _logger.Info("Running Connection Tests");
 
             ImplementationManager.Load<MicrosoftSQLImplementation>();
             ImplementationManager.Load<MySqlImplementation>();
@@ -52,37 +49,44 @@ public class ReviewerRunner
 
             try
             {
-                foreach (var t in targets)
+                foreach (var t in _targets)
                     Console.WriteLine(t.Discover().Exists()
                         ? $"Successfully connected to {t.Name}"
                         : $"Failed to connect to {t.Name}");
             }
             catch (Exception e)
             {
-                logger.Error(e, "Error Validating Targets");
-                return 10;
+                _logger.Error(e, "Error Validating Targets");
+                throw;
             }
         }
 
         //for updater try to match the ProblemValue words
-        var updater = new RowUpdater(_fileSystem, _fileSystem.FileInfo.New(_reviewerOptions.Reportlist))
+        _rowUpdater = new RowUpdater(_fileSystem, _fileSystem.FileInfo.New(_reviewerOptions.Reportlist))
         {
             RulesOnly = _reviewerOptions.OnlyRules,
             RulesFactory = new MatchProblemValuesPatternFactory()
         };
 
         //for Ignorer match the whole string
-        var ignorer = new IgnoreRuleGenerator(_fileSystem, _fileSystem.FileInfo.New(_reviewerOptions.IgnoreList));
+        _ignoreRuleGenerator = new IgnoreRuleGenerator(_fileSystem, _fileSystem.FileInfo.New(_reviewerOptions.IgnoreList));
+    }
 
+    /// <summary>
+    /// Runs the reviewer gui or redaction mode
+    /// </summary>
+    /// <returns></returns>
+    public int Run()
+    {
         try
         {
             if (!string.IsNullOrWhiteSpace(_reviewerOptions.UnattendedOutputPath))
             {
                 //run unattended
-                if (targets.Count != 1)
+                if (_targets.Count != 1)
                     throw new Exception("Unattended requires a single entry in Targets");
 
-                var unattended = new UnattendedReviewer(_reviewerOptions, targets.Single(), ignorer, updater, _fileSystem);
+                var unattended = new UnattendedReviewer(_reviewerOptions, _targets.Single(), _ignoreRuleGenerator, _rowUpdater, _fileSystem);
                 return unattended.Run();
             }
             else
@@ -121,7 +125,7 @@ public class ReviewerRunner
 
                 var top = Application.Top;
 
-                using var mainWindow = new MainWindow(_analyserOpts ?? new IsIdentifiableBaseOptions(), _reviewerOptions, ignorer, updater, _fileSystem);
+                using var mainWindow = new MainWindow(_analyserOpts ?? new IsIdentifiableBaseOptions(), _reviewerOptions, _ignoreRuleGenerator, _rowUpdater, _fileSystem);
 
 
                 // Creates the top-level window to show
@@ -148,7 +152,7 @@ public class ReviewerRunner
         }
         catch (Exception e)
         {
-            logger.Error(e, $"Application crashed");
+            _logger.Error(e, $"Application crashed");
 
             var tries = 5;
             while (Application.Top != null && tries-- > 0)
