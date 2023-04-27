@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using IsIdentifiable.Failures;
 using IsIdentifiable.Reporting;
 using IsIdentifiable.Rules;
+using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
 namespace IsIdentifiable.Redacting;
@@ -70,7 +71,17 @@ public abstract class OutBase
             {
                 //populated rules file already existed
                 var deserializer = new Deserializer();
-                Rules = deserializer.Deserialize<List<IsIdentifiableRule>>(existingRules) ?? new List<IsIdentifiableRule>();
+
+                try
+                {
+                    Rules = deserializer.Deserialize<List<IsIdentifiableRule>>(existingRules) ?? new List<IsIdentifiableRule>();
+
+                }
+                catch (YamlException e)
+                {
+                    Console.Error.WriteLine($"Error desieralizing {rulesFile}: {e}");
+                    throw;
+                }
             }
         }
     }
