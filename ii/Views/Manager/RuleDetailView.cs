@@ -54,7 +54,7 @@ class RuleDetailView : View
         SetNeedsDisplay();
     }
 
-    public void SetupFor(ICustomRule rule)
+    public void SetupFor(IAppliableRule rule)
     {
         ClearProperties();
 

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using IsIdentifiable.Failures;
 
 namespace IsIdentifiable.Rules;
@@ -7,7 +7,7 @@ namespace IsIdentifiable.Rules;
 /// A rule which may Allowlist or report as a validation failure a given value
 /// during IsIdentifiable analysis
 /// </summary>
-public interface ICustomRule
+public interface IAppliableRule
 {
     /// <summary>
     /// Applies the rule to the current value (being validated).

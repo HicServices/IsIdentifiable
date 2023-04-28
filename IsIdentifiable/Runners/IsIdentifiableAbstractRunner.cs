@@ -102,12 +102,12 @@ public abstract class IsIdentifiableAbstractRunner : IDisposable
     /// <summary>
     /// Custom rules you want to apply e.g. always ignore column X if value is Y
     /// </summary>
-    public List<ICustomRule> CustomRules { get; set; } = new();
+    public List<IAppliableRule> CustomRules { get; set; } = new();
 
     /// <summary>
     /// Custom Allowlist rules you want to apply e.g. always ignore a failure if column is X AND value is Y
     /// </summary>
-    public List<ICustomRule> CustomAllowListRules { get; set; } = new();
+    public List<IAppliableRule> CustomAllowListRules { get; set; } = new();
 
     /// <summary>
     /// One cache per field in the data being evaluated, records the recent values passed to <see cref="Validate(string, string)"/> and the results to avoid repeated lookups
@@ -285,7 +285,7 @@ public abstract class IsIdentifiableAbstractRunner : IDisposable
         CustomRules = CustomRules.OrderByDescending(OrderWeight).ToList();
     }
 
-    private int OrderWeight(ICustomRule arg)
+    private int OrderWeight(IAppliableRule arg)
     {
         return arg switch
         {

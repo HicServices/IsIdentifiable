@@ -65,7 +65,7 @@ public class AllowlistRule : IsIdentifiableRule
     }
 
     /// <summary>
-    /// A fake method due to inheriting ICustomRule; never called.
+    /// A fake method due to inheriting IAppliableRule; never called.
     /// </summary>
     /// <exception cref="NotSupportedException"></exception>
     public override RuleAction Apply(string fieldName, string fieldValue, out IEnumerable<FailurePart> badParts)

@@ -24,7 +24,7 @@ namespace IsIdentifiable.Rules;
 /// Example:
 /// "Person\000\0Dave\0" (the word Dave in the input string at index 0 is considered identifiable and is a 'Person')
 /// </remarks>
-public class SocketRule : ICustomRule,IDisposable
+public class SocketRule : IAppliableRule,IDisposable
 {
     /// <summary>
     /// The name of the server that is running the listening service e.g. localhost

@@ -14,7 +14,7 @@ class ConsensusRuleTests
     {
         var rule = new ConsensusRule()
         {
-            Rules = new ICustomRule[]
+            Rules = new IAppliableRule[]
             {
                 new TestRule(RuleAction.Report,new FailurePart("bb",FailureClassification.Person)),
                 new TestRule(RuleAction.Ignore),
@@ -33,7 +33,7 @@ class ConsensusRuleTests
     {
         var rule = new ConsensusRule()
         {
-            Rules = new ICustomRule[]
+            Rules = new IAppliableRule[]
             {
                 new TestRule(RuleAction.Report,new FailurePart("bb",FailureClassification.Person,offset)),
                 new TestRule(RuleAction.Report,new FailurePart("bb",FailureClassification.Person,offset)),
@@ -51,7 +51,7 @@ class ConsensusRuleTests
     {
         var rule = new ConsensusRule()
         {
-            Rules = new ICustomRule[]
+            Rules = new IAppliableRule[]
             {
                 // Word is length 2 and begins at offset 10
                 new TestRule(RuleAction.Report,new FailurePart("ab",FailureClassification.Person,10)),
@@ -90,7 +90,7 @@ class ConsensusRuleTests
         Assert.AreEqual(567,((SocketRule)ruleSet.ConsensusRules.Single().Rules[1]).Port);
     }
 
-    class TestRule : ICustomRule
+    class TestRule : IAppliableRule
     {
         RuleAction _rule;
         FailurePart[] _parts;

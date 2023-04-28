@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace IsIdentifiable.Rules;
 /// A simple Regex based rule that allows flexible white listing or blacklisting of values
 /// either in all columns or only a single column
 /// </summary>
-public class IsIdentifiableRule : ICustomRule
+public class IsIdentifiableRule : IAppliableRule
 {
 
     /// <summary>

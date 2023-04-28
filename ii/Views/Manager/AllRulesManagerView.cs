@@ -74,7 +74,7 @@ class AllRulesManagerView : View, ITreeBuilder<object>
             var allSelected = _treeView.GetAllSelectedObjects().ToArray();
 
             // Proceed only if all the things selected are rules
-            if (!allSelected.All(s => s is ICustomRule)) return;
+            if (!allSelected.All(s => s is IAppliableRule)) return;
             // and the unique parents among them
             var parents = allSelected.Select(r => _treeView.GetParent(r)).Distinct().ToArray();
             if (parents.Length != 1) return;
@@ -102,7 +102,7 @@ class AllRulesManagerView : View, ITreeBuilder<object>
                 if(ruleTypeNode.Rules == null)
                     throw new Exception("RuleTypeNode did not contain any rules, how are you deleting a node!?");
 
-                foreach(var rule in allSelected.Cast<ICustomRule>()) ruleTypeNode.Rules.Remove(rule);
+                foreach(var rule in allSelected.Cast<IAppliableRule>()) ruleTypeNode.Rules.Remove(rule);
 
                 ruleTypeNode.Parent.Save();
                 _treeView.RefreshObject(ruleTypeNode);
@@ -124,7 +124,7 @@ class AllRulesManagerView : View, ITreeBuilder<object>
 
     private void Tv_SelectionChanged(object? sender, SelectionChangedEventArgs<object> e)
     {
-        if(e.NewValue is ICustomRule r)
+        if(e.NewValue is IAppliableRule r)
         {
             _detailView.SetupFor(r);
         }
@@ -168,7 +168,7 @@ class AllRulesManagerView : View, ITreeBuilder<object>
     public bool CanExpand(object toExpand)
     {
         // These are the things that cannot be expanded upon
-        return toExpand is not (Exception or ICustomRule);
+        return toExpand is not (Exception or IAppliableRule);
         //everything else can be expanded
     }
 

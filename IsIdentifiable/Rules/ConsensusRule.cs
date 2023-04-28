@@ -8,12 +8,12 @@ namespace IsIdentifiable.Rules;
 /// <summary>
 /// Rule in which 2 or more subrules must agree on common sections of problem
 /// </summary>
-public class ConsensusRule : ICustomRule
+public class ConsensusRule : IAppliableRule
 {
     /// <summary>
     /// Rules which must all reach a consesus on classifications
     /// </summary>
-    public ICustomRule[] Rules {get;set;}
+    public IAppliableRule[] Rules {get;set;}
 
     /// <summary>
     /// Applies all <see cref="Rules"/> and returns the consensus <see cref="RuleAction"/>.  All rules must agree on the action and at least one index of one word that is a <see cref="FailurePart"/>

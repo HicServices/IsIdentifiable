@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Comment CommentText="Execution Layer (In which records are sourced)">
     <Position X="0.5" Y="0.5" Height="0.338" Width="2.876" />
@@ -228,11 +228,11 @@
       <FileName>Whitelists\IWhitelistSource.cs</FileName>
     </TypeIdentifier>
   </Interface>
-  <Interface Name="IsIdentifiable.Rules.ICustomRule">
+  <Interface Name="IsIdentifiable.Rules.IAppliableRule">
     <Position X="4.5" Y="1" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Rules\ICustomRule.cs</FileName>
+      <FileName>Rules\IAppliableRule.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Enum Name="IsIdentifiable.Failures.FailureClassification">
