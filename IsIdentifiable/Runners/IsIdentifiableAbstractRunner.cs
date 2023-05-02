@@ -289,14 +289,14 @@ public abstract class IsIdentifiableAbstractRunner : IDisposable
     {
         return arg switch
         {
-            IsIdentifiableRule irule => irule.Action switch
+            IRegexRule irule => irule.Action switch
             {
                 RuleAction.None => -6000,
                 //ignore rules float to the top
                 RuleAction.Ignore => 100,
                 //then consider the report explicit rules (by pattern)
                 RuleAction.Report => 0,
-                _ => throw new ArgumentOutOfRangeException(nameof(arg),$"Invalid action {irule.Action} for {nameof(IsIdentifiableRule)} {arg}")
+                _ => throw new ArgumentOutOfRangeException(nameof(arg),$"Invalid action {irule.Action} for {nameof(IRegexRule)} {arg}")
             },
             //socket rules sink to the bottom
             SocketRule => -5000,
@@ -317,13 +317,13 @@ public abstract class IsIdentifiableAbstractRunner : IDisposable
         var builder = new DeserializerBuilder();
         builder.WithTagMapping("!SocketRule", typeof(SocketRule));
         builder.WithTagMapping("!AllowlistRule", typeof(AllowlistRule));
-        builder.WithTagMapping("!IsIdentifiableRule", typeof(IsIdentifiableRule));
+        builder.WithTagMapping("!IRegexRule", typeof(IRegexRule));
 
         return builder.Build();
     }
 
     /// <summary>
-    /// Deserializes the given <paramref name="yaml"/> into a collection of <see cref="IsIdentifiableRule"/>
+    /// Deserializes the given <paramref name="yaml"/> into a collection of <see cref="IRegexRule"/>
     /// which are added to <see cref="CustomRules"/>
     /// </summary>
     /// <param name="yaml"></param>

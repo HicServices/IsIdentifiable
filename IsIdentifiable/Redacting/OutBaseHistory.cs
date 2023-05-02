@@ -10,7 +10,7 @@ public class OutBaseHistory
     /// <summary>
     /// The rule generated
     /// </summary>
-    public IsIdentifiableRule Rule { get; }
+    public IRegexRule Rule { get; }
 
     /// <summary>
     /// The serialized representation of the <see cref="Rule"/> (added to <see cref="OutBase.RulesFile"/>)
@@ -22,7 +22,7 @@ public class OutBaseHistory
     /// </summary>
     /// <param name="rule"></param>
     /// <param name="yaml"></param>
-    public OutBaseHistory(IsIdentifiableRule rule, string yaml)
+    public OutBaseHistory(IRegexRule rule, string yaml)
     {
         Rule = rule;
         Yaml = yaml;

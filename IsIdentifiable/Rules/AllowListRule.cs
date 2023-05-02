@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -12,9 +12,9 @@ using IsIdentifiable.Failures;
 namespace IsIdentifiable.Rules;
 
 /// <summary>
-/// Expanded <see cref="IsIdentifiableRule"/> which works only for <see cref="RuleAction.Ignore"/>.  Should be run after main rules have picked up failures.  This class is designed to perform final checks on failures and discard based on <see cref="IsIdentifiableRule.IfPatternRegex"/> and/or <see cref="IfPartPatternRegex"/>
+/// Expanded <see cref="RegexRule"/> which works only for <see cref="RuleAction.Ignore"/>.  Should be run after main rules have picked up failures.  This class is designed to perform final checks on failures and discard based on <see cref="IRegexRule.IfPatternRegex"/> and/or <see cref="IfPartPatternRegex"/>
 /// </summary>
-public class AllowlistRule : IsIdentifiableRule
+public class AllowlistRule : RegexRule
 {
 
     /// <summary>

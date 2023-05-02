@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace IsIdentifiable.Rules;
 
@@ -12,7 +12,7 @@ public class RuleSet
     /// <summary>
     /// Normal rules e.g. regular expressions for identifying/ignoring bits of text discovered
     /// </summary>
-    public List<IsIdentifiableRule> BasicRules { get; set; } = new();
+    public List<RegexRule> BasicRules { get; set; } = new();
 
     /// <summary>
     /// Remote services that expand IsIdentifiables base capabilities e.g. NLP services such as

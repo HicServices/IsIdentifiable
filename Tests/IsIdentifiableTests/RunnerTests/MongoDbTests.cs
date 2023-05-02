@@ -1,4 +1,4 @@
-﻿using IsIdentifiable.Options;
+using IsIdentifiable.Options;
 using IsIdentifiable.Reporting.Reports;
 using IsIdentifiable.Rules;
 using IsIdentifiable.Runners;
@@ -196,7 +196,7 @@ namespace IsIdentifiable.Tests.RunnerTests
                 StoreReport = true
             }, _fileSystem) ;
 
-            runner.CustomRules.Add(new IsIdentifiableRule
+            runner.CustomRules.Add(new RegexRule
             {
                 Action = RuleAction.Report,
                 As = Failures.FailureClassification.Person,

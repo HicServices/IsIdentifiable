@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
@@ -262,14 +262,14 @@ BasicRules:
     {
         var runner = new TestRunner("FF", _fileSystem);
 
-        runner.CustomRules.Add( new IsIdentifiableRule()
+        runner.CustomRules.Add( new RegexRule()
         {
             IfPattern = "ff", 
             Action = RuleAction.Ignore,
             CaseSensitive = caseSensitive
         });
 
-        runner.CustomRules.Add( new IsIdentifiableRule(){IfPattern = "\\w+", Action = RuleAction.Report, As = FailureClassification.Person});
+        runner.CustomRules.Add( new RegexRule(){IfPattern = "\\w+", Action = RuleAction.Report, As = FailureClassification.Person});
             
         runner.Run();
             
@@ -292,14 +292,14 @@ BasicRules:
         if (ignoreFirst)
         {
             //ignore the report
-            runner.CustomRules.Add( new IsIdentifiableRule { IfPattern = "FF", Action = RuleAction.Ignore });
-            runner.CustomRules.Add( new IsIdentifiableRule(){IfPattern = "\\w+", Action = RuleAction.Report, As = FailureClassification.Person});
+            runner.CustomRules.Add( new RegexRule { IfPattern = "FF", Action = RuleAction.Ignore });
+            runner.CustomRules.Add( new RegexRule(){IfPattern = "\\w+", Action = RuleAction.Report, As = FailureClassification.Person});
         }
         else
         {
             //report then ignore
-            runner.CustomRules.Add( new IsIdentifiableRule(){IfPattern = "\\w+", Action = RuleAction.Report, As = FailureClassification.Person});
-            runner.CustomRules.Add( new IsIdentifiableRule { IfPattern = "FF", Action = RuleAction.Ignore });
+            runner.CustomRules.Add( new RegexRule(){IfPattern = "\\w+", Action = RuleAction.Report, As = FailureClassification.Person});
+            runner.CustomRules.Add( new RegexRule { IfPattern = "FF", Action = RuleAction.Ignore });
         }
 
         runner.SortRules();

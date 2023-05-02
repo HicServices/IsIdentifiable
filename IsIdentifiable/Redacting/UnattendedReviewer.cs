@@ -47,8 +47,8 @@ public class UnattendedReviewer
     public int Total = 0;
     private readonly Logger _log;
 
-    readonly Dictionary<IsIdentifiableRule, int> _updateRulesUsed = new();
-    readonly Dictionary<IsIdentifiableRule, int> _ignoreRulesUsed = new();
+    readonly Dictionary<IRegexRule, int> _updateRulesUsed = new();
+    readonly Dictionary<IRegexRule, int> _ignoreRulesUsed = new();
 
     /// <summary>
     /// Creates a new instance that will connect to the database server (<paramref name="target"/>) and perform redactions using the <paramref name="updater"/>
@@ -103,7 +103,7 @@ public class UnattendedReviewer
 
         using (var storeReportDestination = new CsvDestination(new IsIdentifiableDicomFileOptions(), _outputFile, _fileSystem))
         {
-            IsIdentifiableRule updateRule;
+            IRegexRule updateRule;
 
             storeReport.AddDestination(storeReportDestination);
 

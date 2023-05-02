@@ -23,7 +23,7 @@ public abstract class OutBase
     /// <summary>
     /// Existing rules which describe how to detect a <see cref="Failure"/> that should be handled by this class.  These are synced with the contents of the <see cref="RulesFile"/>
     /// </summary>
-    public List<IsIdentifiableRule> Rules { get; }
+    public List<IRegexRule> Rules { get; }
 
     /// <summary>
     /// Persistence of <see cref="RulesFile"/>
@@ -58,7 +58,7 @@ public abstract class OutBase
         {
             //create it as an empty file
             using (rulesFile.Create())
-                Rules = new List<IsIdentifiableRule>();
+                Rules = new List<IRegexRule>();
         }
         else
         {
@@ -66,7 +66,7 @@ public abstract class OutBase
 
             //empty rules file
             if (string.IsNullOrWhiteSpace(existingRules))
-                Rules = new List<IsIdentifiableRule>();
+                Rules = new List<IRegexRule>();
             else
             {
                 //populated rules file already existed
@@ -74,7 +74,7 @@ public abstract class OutBase
 
                 try
                 {
-                    Rules = deserializer.Deserialize<List<IsIdentifiableRule>>(existingRules) ?? new List<IsIdentifiableRule>();
+                    Rules = deserializer.Deserialize<List<RegexRule>>(existingRules).ToList<IRegexRule>() ?? new List<IRegexRule>();
 
                 }
                 catch (YamlException e)
@@ -93,11 +93,11 @@ public abstract class OutBase
     /// <param name="action"></param>
     /// <param name="overrideRuleFactory">Overrides the current <see cref="RulesFactory"/> and uses this instead</param>
     /// <returns>The new / existing rule that covers failure</returns>
-    protected IsIdentifiableRule Add(Failure f, RuleAction action, IRulePatternFactory overrideRuleFactory = null)
+    protected IRegexRule Add(Failure f, RuleAction action, IRulePatternFactory overrideRuleFactory = null)
     {
         var factory = overrideRuleFactory ?? RulesFactory;
 
-        var rule = new IsIdentifiableRule
+        var rule = new RegexRule
         {
             Action = action,
             IfColumn = f.ProblemField,
@@ -118,7 +118,7 @@ public abstract class OutBase
     /// <param name="rule"></param>
     /// <returns>The <paramref name="rule"/> passed or the existing identical rule if one already exists
     /// in rules base</returns>
-    public IsIdentifiableRule Add(IsIdentifiableRule rule)
+    public IRegexRule Add(IRegexRule rule)
     {
         //don't add identical rules
         if (Rules.Any(r => r.AreIdentical(rule)))
@@ -140,13 +140,13 @@ public abstract class OutBase
     /// <param name="rule"></param>
     /// <param name="addCreatorComment"></param>
     /// <returns></returns>
-    private string Serialize(IsIdentifiableRule rule, bool addCreatorComment)
+    private string Serialize(IRegexRule rule, bool addCreatorComment)
     {
         var serializer = new SerializerBuilder()
             .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitDefaults)
             .Build();
 
-        var yaml = serializer.Serialize(new List<IsIdentifiableRule> { rule });
+        var yaml = serializer.Serialize(new List<IRegexRule> { rule });
 
         if (!addCreatorComment)
             return yaml;
@@ -159,7 +159,7 @@ public abstract class OutBase
     /// </summary>
     /// <param name="rule"></param>
     /// <returns>True if the rule existed and was successfully deleted in memory and on disk</returns>
-    public bool Delete(IsIdentifiableRule rule)
+    public bool Delete(IRegexRule rule)
     {
         return Rules.Remove(rule) && Purge(Serialize(rule, false), $"# Rule deleted by {Environment.UserName} - {DateTime.Now}{Environment.NewLine}");
     }
@@ -241,7 +241,7 @@ public abstract class OutBase
     /// <param name="failure"></param>
     /// <param name="match">The first rule that matches the <paramref name="failure"/></param>
     /// <returns></returns>
-    protected bool IsCoveredByExistingRule(Failure failure, out IsIdentifiableRule match)
+    protected bool IsCoveredByExistingRule(Failure failure, out IRegexRule match)
     {
         //if any rule matches then we are covered by an existing rule
         match = Rules.FirstOrDefault(r => r.Apply(failure.ProblemField, failure.ProblemValue, out _) != RuleAction.None);

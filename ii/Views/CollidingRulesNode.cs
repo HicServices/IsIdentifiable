@@ -10,19 +10,19 @@ internal class CollidingRulesNode : TreeNode
     /// <summary>
     /// An ignore rule that collides with the <see cref="UpdateRule"/> for certain input values
     /// </summary>
-    public IsIdentifiableRule IgnoreRule {get; }
+    public IRegexRule IgnoreRule {get; }
 
     /// <summary>
     /// An update rule that collides with the <see cref="IgnoreRule"/> for certain input values
     /// </summary>
-    public IsIdentifiableRule UpdateRule {get; }
+    public IRegexRule UpdateRule {get; }
         
     /// <summary>
     /// Input failures that match both the <see cref="IgnoreRule"/> and the <see cref="UpdateRule"/>
     /// </summary>
     public readonly List<Failure> CollideOn;
 
-    public CollidingRulesNode(IsIdentifiableRule ignoreRule, IsIdentifiableRule updateRule, Failure f)
+    public CollidingRulesNode(IRegexRule ignoreRule, IRegexRule updateRule, Failure f)
     {
         IgnoreRule = ignoreRule;
         UpdateRule = updateRule;

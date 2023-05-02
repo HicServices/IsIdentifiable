@@ -7,10 +7,10 @@ namespace ii.Views;
 internal class RuleUsageNode : TreeNode
 {
     public OutBase Rulebase { get; }
-    public IsIdentifiableRule Rule { get; }
+    public IRegexRule Rule { get; }
     public int NumberOfTimesUsed { get; }
 
-    public RuleUsageNode(OutBase rulebase, IsIdentifiableRule rule, int numberOfTimesUsed)
+    public RuleUsageNode(OutBase rulebase, IRegexRule rule, int numberOfTimesUsed)
     {
         Rulebase = rulebase;
         Rule = rule;

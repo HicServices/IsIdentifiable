@@ -9,7 +9,7 @@ using IsIdentifiable.Rules;
 namespace IsIdentifiable.Redacting.UpdateStrategies;
 
 /// <summary>
-/// builds SQL UPDATE statements based on the capture groups of <see cref="IsIdentifiableRule.IfPattern"/> when matching
+/// builds SQL UPDATE statements based on the capture groups of <see cref="IRegexRule.IfPattern"/> when matching
 /// <see cref="Failure.ProblemValue"/>.  Where this is unclear (e.g. no capture groups in Regex) or no rule is available
 /// then falls back on <see cref="ProblemValuesUpdateStrategy"/>
 /// </summary>
@@ -18,14 +18,14 @@ public class RegexUpdateStrategy : UpdateStrategy
     private readonly ProblemValuesUpdateStrategy _fallback = new();
 
     /// <summary>
-    /// Returns SQL for updating the <paramref name="table"/> to redact the capture groups in <see cref="IsIdentifiableRule.IfPattern"/>.  If no capture groups are represented in the <paramref name="usingRule"/> then this class falls back on <see cref="ProblemValuesUpdateStrategy"/>
+    /// Returns SQL for updating the <paramref name="table"/> to redact the capture groups in <see cref="IRegexRule.IfPattern"/>.  If no capture groups are represented in the <paramref name="usingRule"/> then this class falls back on <see cref="ProblemValuesUpdateStrategy"/>
     /// </summary>
     /// <param name="table"></param>
     /// <param name="primaryKeys"></param>
     /// <param name="failure"></param>
     /// <param name="usingRule"></param>
     /// <returns></returns>
-    public override IEnumerable<string> GetUpdateSql(DiscoveredTable table, Dictionary<DiscoveredTable, DiscoveredColumn> primaryKeys, Failure failure, IsIdentifiableRule usingRule)
+    public override IEnumerable<string> GetUpdateSql(DiscoveredTable table, Dictionary<DiscoveredTable, DiscoveredColumn> primaryKeys, Failure failure, IRegexRule usingRule)
     {
         if (usingRule == null || string.IsNullOrWhiteSpace(usingRule.IfPattern))
             return _fallback.GetUpdateSql(table, primaryKeys, failure, usingRule);

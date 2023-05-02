@@ -5,9 +5,9 @@ namespace ii.Views;
 
 internal class DuplicateRulesNode : TreeNode
 {
-    private IsIdentifiableRule[] Rules { get; }
+    private IRegexRule[] Rules { get; }
 
-    public DuplicateRulesNode(string pattern, IsIdentifiableRule[] rules)
+    public DuplicateRulesNode(string pattern, IRegexRule[] rules)
     {
         Rules = rules;
 

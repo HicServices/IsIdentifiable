@@ -85,7 +85,7 @@ class AllRulesManagerView : View, ITreeBuilder<object>
             {
                 if (MessageBox.Query("Delete Rules", $"Delete {allSelected.Length} rules?", "Yes", "No") != 0)
                     return;
-                foreach(var r in allSelected.Cast<IsIdentifiableRule>())
+                foreach(var r in allSelected.Cast<IRegexRule>())
                 {
                     // remove the rules
                     outBase.Rules.Remove(r);
@@ -141,7 +141,7 @@ class AllRulesManagerView : View, ITreeBuilder<object>
 
     private string NodeAspectGetter(object toRender)
     {
-        if(toRender is IsIdentifiableRule basicrule)
+        if(toRender is IRegexRule basicrule)
         {
             return basicrule.IfPattern;
         }

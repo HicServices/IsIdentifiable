@@ -51,7 +51,7 @@ public class RowUpdater : OutBase
     /// <param name="server">Where to connect to get the data, can be null if <see cref="RulesOnly"/> is true</param>
     /// <param name="failure">The failure to redact/create a rule for</param>
     /// <param name="usingRule">Pass null to create a new rule or give value to reuse an existing rule</param>
-    public void Update(DiscoveredServer server, Failure failure, IsIdentifiableRule usingRule)
+    public void Update(DiscoveredServer server, Failure failure, IRegexRule usingRule)
     {
         //there's no rule yet so create one (and add to Reportlist.yaml)
         usingRule ??= Add(failure, RuleAction.Report);
@@ -112,7 +112,7 @@ public class RowUpdater : OutBase
     /// <param name="failure"></param>
     /// <param name="rule">The first rule that covered the <paramref name="failure"/></param>
     /// <returns>True if <paramref name="failure"/> is novel and not seen before</returns>
-    public bool OnLoad(DiscoveredServer server, Failure failure, out IsIdentifiableRule rule)
+    public bool OnLoad(DiscoveredServer server, Failure failure, out IRegexRule rule)
     {
         // if we are not updating the server just tell them if it is novel or not
         if (server == null)

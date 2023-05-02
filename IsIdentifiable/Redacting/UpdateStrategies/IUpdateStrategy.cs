@@ -6,7 +6,7 @@ using IsIdentifiable.Rules;
 namespace IsIdentifiable.Redacting.UpdateStrategies;
 
 /// <summary>
-/// Interface for generating SQL statements that perform redactions on a database for a given <see cref="Failure"/> when applying an <see cref="IsIdentifiableRule"/>
+/// Interface for generating SQL statements that perform redactions on a database for a given <see cref="Failure"/> when applying an <see cref="IRegexRule"/>
 /// </summary>
 public interface IUpdateStrategy
 {
@@ -19,5 +19,5 @@ public interface IUpdateStrategy
     /// <param name="usingRule">How to redact the <see cref="Failure.ProblemValue"/></param>
     /// <returns></returns>
     IEnumerable<string> GetUpdateSql(DiscoveredTable table,
-        Dictionary<DiscoveredTable, DiscoveredColumn> primaryKeys, Failure failure, IsIdentifiableRule usingRule);
+        Dictionary<DiscoveredTable, DiscoveredColumn> primaryKeys, Failure failure, IRegexRule usingRule);
 }

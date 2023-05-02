@@ -20,7 +20,7 @@ public class ProblemValuesUpdateStrategy : UpdateStrategy
     /// <param name="usingRule"></param>
     /// <returns></returns>
     public override IEnumerable<string> GetUpdateSql(DiscoveredTable table,
-        Dictionary<DiscoveredTable, DiscoveredColumn> primaryKeys, Failure failure, IsIdentifiableRule usingRule)
+        Dictionary<DiscoveredTable, DiscoveredColumn> primaryKeys, Failure failure, IRegexRule usingRule)
     {
         var syntax = table.GetQuerySyntaxHelper();
 

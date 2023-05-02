@@ -19,7 +19,7 @@ public class DicomFileRunnerTest
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        var testRulesDir = new DirectoryInfo(Path.Combine(TestContext.CurrentContext.TestDirectory, "data", "IsIdentifiableRules"));
+        var testRulesDir = new DirectoryInfo(Path.Combine(TestContext.CurrentContext.TestDirectory, "data", "IRegexRules"));
         testRulesDir.Create();
 
         _tessDir = new DirectoryInfo(Path.Combine(testRulesDir.Parent.FullName, "tessdata"));
