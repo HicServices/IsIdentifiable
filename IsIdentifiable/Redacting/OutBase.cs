@@ -126,32 +126,12 @@ public abstract class OutBase
 
         Rules.Add(rule);
 
-        var contents = Serialize(rule, true);
+        var contents = RuleHelpers.SerializeWithComment(rule, DateTime.Now);
 
         FileSystem.File.AppendAllText(RulesFile.FullName, contents);
         History.Push(new OutBaseHistory(rule, contents));
 
         return rule;
-    }
-
-    /// <summary>
-    /// Serializes the <paramref name="rule"/> into yaml optionally with a comment at the start
-    /// </summary>
-    /// <param name="rule"></param>
-    /// <param name="addCreatorComment"></param>
-    /// <returns></returns>
-    private string Serialize(IRegexRule rule, bool addCreatorComment)
-    {
-        var serializer = new SerializerBuilder()
-            .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitDefaults)
-            .Build();
-
-        var yaml = serializer.Serialize(new List<IRegexRule> { rule });
-
-        if (!addCreatorComment)
-            return yaml;
-
-        return $"#{Environment.UserName} - {DateTime.Now}{Environment.NewLine}{yaml}";
     }
 
     /// <summary>
@@ -161,7 +141,13 @@ public abstract class OutBase
     /// <returns>True if the rule existed and was successfully deleted in memory and on disk</returns>
     public bool Delete(IRegexRule rule)
     {
-        return Rules.Remove(rule) && Purge(Serialize(rule, false), $"# Rule deleted by {Environment.UserName} - {DateTime.Now}{Environment.NewLine}");
+        var removed = Rules.Remove(rule);
+
+        if (!removed)
+            return false;
+
+        var ruleYaml = RuleHelpers.Serialize(rule);
+        return Purge(ruleYaml, $"# Rule deleted by {Environment.UserName} - {DateTime.Now}{Environment.NewLine}");
     }
 
     /// <summary>
