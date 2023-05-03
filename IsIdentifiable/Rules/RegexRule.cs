@@ -32,6 +32,7 @@ public class RegexRule : MemberwiseEquatable<RegexRule>, IRegexRule
     /// Combination of <see cref="IfPattern"/> and <see cref="CaseSensitive"/>.  Use this to validate
     /// whether the rule should be applied.
     /// </summary>
+    [MemberwiseEqualityIgnore] // NOTE(rkm 2023-05-03) Exclude so equality comparer is valid
     protected Regex IfPatternRegex;
     private string _ifPatternString;
     private bool _caseSensitive;
