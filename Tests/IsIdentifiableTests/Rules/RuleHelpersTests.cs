@@ -52,7 +52,7 @@ namespace IsIdentifiable.Tests.Rules
 
             var now = DateTime.Now;
             var expectedLines = new List<string> {
-                $"#Ruairidh - {now}",
+                $"#{Environment.UserName} - {now}",
                 "- Action: Report",
                 "  IfPattern: foo",
                 "",
@@ -86,7 +86,7 @@ namespace IsIdentifiable.Tests.Rules
                 // Assert
                 Assert.Throws(
                     Is.TypeOf<FileNotFoundException>()
-                    .And.Message.Contains("t does not exist"),
+                    .And.Message.Contains("t.yaml does not exist"),
                     () => RuleHelpers.LoadFrom(fi, createIfMissing)
                 );
             }

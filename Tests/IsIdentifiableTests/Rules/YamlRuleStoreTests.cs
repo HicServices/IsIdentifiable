@@ -119,7 +119,7 @@ namespace IsIdentifiable.Tests.Rules
 
             var store = new YamlRuleStore(fi, _dateTimeProvider);
 
-            var expected = $"# Rule deleted by {Environment.UserName} - {_dateTimeProvider.UtcNow()}\r\n";
+            var expected = $"# Rule deleted by {Environment.UserName} - {_dateTimeProvider.UtcNow()}{Environment.NewLine}";
 
             // Act
 
