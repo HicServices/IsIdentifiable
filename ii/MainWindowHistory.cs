@@ -1,7 +1,9 @@
-﻿using IsIdentifiable.Redacting;
+using IsIdentifiable.Redacting;
+using System;
 
 namespace ii;
 
+[Obsolete]
 internal class MainWindowHistory
 {
     public int Index { get;}

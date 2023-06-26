@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.IO.Abstractions;
 using FAnsi.Discovery;
@@ -9,7 +9,7 @@ namespace IsIdentifiable.Reporting.Destinations;
 internal class DatabaseDestination : ReportDestination
 {
     private readonly string _reportName;
-    private DiscoveredTable _tbl;
+    private readonly DiscoveredTable _tbl;
 
     public DatabaseDestination(IsIdentifiableBaseOptions options, string reportName, IFileSystem fileSystem)
         : base(options, fileSystem)
@@ -43,10 +43,8 @@ internal class DatabaseDestination : ReportDestination
             _tbl.Database.CreateTable(_tbl.GetRuntimeName(), items);
         else
         {
-            using (var insert = _tbl.BeginBulkInsert())
-            {
-                insert.Upload(items);
-            }
+            using var insert = _tbl.BeginBulkInsert();
+            insert.Upload(items);
         }
     }
 

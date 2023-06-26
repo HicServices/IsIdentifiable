@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO.Abstractions;
 using System.Threading;
+using IsIdentifiable.Failures;
 
 namespace IsIdentifiable.Reporting.Reports;
 

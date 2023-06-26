@@ -114,8 +114,6 @@ public class RegexRule : MemberwiseEquatable<RegexRule>, IRegexRule
 
                 return Action;
             }
-
-
         }
 
         //our rule does not apply to the current value

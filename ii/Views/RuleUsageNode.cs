@@ -1,18 +1,18 @@
-﻿using IsIdentifiable.Redacting;
 using IsIdentifiable.Rules;
+using IsIdentifiable.Rules.Storage;
 using Terminal.Gui.Trees;
 
 namespace ii.Views;
 
 internal class RuleUsageNode : TreeNode
 {
-    public OutBase Rulebase { get; }
-    public IRegexRule Rule { get; }
+    public readonly IRegexRuleStore RuleStore;
+    public readonly IRegexRule Rule;
     public int NumberOfTimesUsed { get; }
 
-    public RuleUsageNode(OutBase rulebase, IRegexRule rule, int numberOfTimesUsed)
+    public RuleUsageNode(IRegexRuleStore ruleStore, IRegexRule rule, int numberOfTimesUsed)
     {
-        Rulebase = rulebase;
+        RuleStore = ruleStore;
         Rule = rule;
         NumberOfTimesUsed = numberOfTimesUsed;
     }

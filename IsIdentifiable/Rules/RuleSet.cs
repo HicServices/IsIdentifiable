@@ -21,14 +21,14 @@ public class RuleSet
     public List<SocketRule> SocketRules { get; set; } = new();
 
     /// <summary>
-    /// Rules which suppress other rules.  If another rule (e.g. NLP) classifies the data is
+    /// _rules which suppress other rules.  If another rule (e.g. NLP) classifies the data is
     /// identifiable but it matches an <see cref="AllowlistRule"/> then it will not be reported
     /// and instead suppressed (as a false positive).
     /// </summary>
     public List<AllowlistRule> AllowlistRules { get; set; } = new();
 
     /// <summary>
-    /// Rules which combine one or more other rules to get a 'consensus' (or INTERSECT).
+    /// _rules which combine one or more other rules to get a 'consensus' (or INTERSECT).
     /// This can be used to deal with over matching in NLP e.g. by running 2 different 
     /// NLP classifiers and only reporting identifiable data when both agree.
     /// </summary>

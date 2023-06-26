@@ -1,12 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using Equ;
-using IsIdentifiable.Failures;
 
-namespace IsIdentifiable.Reporting;
+namespace IsIdentifiable.Failures;
 
 /// <summary>
 /// Describes all failing <see cref="Parts"/> of a single cell of data being evaluted
@@ -19,7 +18,7 @@ public class Failure : MemberwiseEquatable<Failure>
     /// Each sub part of <see cref="ProblemValue"/> that the system had a problem with
     /// </summary>
     public ReadOnlyCollection<FailurePart> Parts { get; private set; }
-        
+
     /// <summary>
     /// Description of the item being evaluated (e.g. table name, file name etc)
     /// </summary>
@@ -47,7 +46,7 @@ public class Failure : MemberwiseEquatable<Failure>
     /// <param name="parts"></param>
     public Failure(IEnumerable<FailurePart> parts)
     {
-        Parts = new ReadOnlyCollection<FailurePart>(parts.OrderBy(p=>p.Offset).ToList());
+        Parts = new ReadOnlyCollection<FailurePart>(parts.OrderBy(p => p.Offset).ToList());
     }
 
 
@@ -79,10 +78,10 @@ public class Failure : MemberwiseEquatable<Failure>
         var sb = new StringBuilder();
 
         // for each character in the input string
-        for(var i=0;i<origValue.Length;i++)
+        for (var i = 0; i < origValue.Length; i++)
         {
             // while there are failures that include this element
-            if(Parts.Any(p=>p.Includes(i)))
+            if (Parts.Any(p => p.Includes(i)))
             {
                 //add it to the current value we are returning
                 sb.Append(origValue[i]);
@@ -90,7 +89,7 @@ public class Failure : MemberwiseEquatable<Failure>
             else
             {
                 // we ran off the end of a current problem word(s) or there's no current problem word(s)
-                if(sb.Length > 0)
+                if (sb.Length > 0)
                 {
                     yield return sb.ToString();
                     sb.Clear();

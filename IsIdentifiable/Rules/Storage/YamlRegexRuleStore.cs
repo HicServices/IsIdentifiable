@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 
-namespace IsIdentifiable.Rules
+namespace IsIdentifiable.Rules.Storage
 {
-    public class YamlRuleStore : RuleStore, IDisposable
+    public class YamlRegexRuleStore : RegexRuleStore, IDisposable
     {
         private readonly IFileInfo _rulesFile;
         private StreamWriter _streamWriter = null;
@@ -15,13 +15,18 @@ namespace IsIdentifiable.Rules
 
         private readonly Stack<string> _serializedRuleHistory = new();
 
-        public YamlRuleStore(IFileInfo rulesFile, DateTimeProvider dateTimeProvider)
+        public YamlRegexRuleStore(
+            IRegexRuleGenerator ruleGenerator,
+            IFileInfo rulesFile,
+            DateTimeProvider dateTimeProvider
+        )
+            : base(ruleGenerator)
         {
             _rulesFile = rulesFile;
             _dateTimeProvider = dateTimeProvider;
 
             var rules = RuleHelpers.LoadFrom(rulesFile, createIfMissing: true);
-            Rules.AddRange(rules);
+            SetInitialRules(rules);
         }
 
         protected override void AddImpl(IRegexRule rule)
@@ -34,19 +39,19 @@ namespace IsIdentifiable.Rules
             _serializedRuleHistory.Push(ruleYaml);
         }
 
-        protected override void DeleteImpl(IRegexRule rule)
+        protected override void RemoveImpl(IRegexRule rule)
         {
             var ruleYaml = RuleHelpers.Serialize(rule);
-            Delete(ruleYaml);
+            Remove(ruleYaml);
         }
 
         protected override void UndoImpl(IRegexRule _)
         {
             var ruleYaml = _serializedRuleHistory.Pop();
-            Delete(ruleYaml);
+            Remove(ruleYaml);
         }
 
-        private void Delete(string ruleYaml)
+        private void Remove(string ruleYaml)
         {
             var comment = $"# Rule deleted by {Environment.UserName} - {_dateTimeProvider.UtcNow()}{Environment.NewLine}";
 
@@ -58,7 +63,7 @@ namespace IsIdentifiable.Rules
             if (newText.Equals(oldText))
                 return;
 
-            var stream = _rulesFile.Open(FileMode.Open | FileMode.Truncate);
+            var stream = _rulesFile.Open(FileMode.Truncate);
             _streamWriter = new StreamWriter(stream);
             _streamWriter.Write(newText);
         }
@@ -68,11 +73,20 @@ namespace IsIdentifiable.Rules
         /// </summary>
         public void Flush() => _streamWriter?.Flush();
 
+        /// <inheritdoc/>
+        protected override void ClearImpl()
+        {
+            var stream = _rulesFile.Open(FileMode.Truncate);
+            _streamWriter = new StreamWriter(stream);
+        }
+
+        /// <inheritdoc/>
         public void Dispose()
         {
             _streamWriter?.Dispose();
 
             GC.SuppressFinalize(this);
         }
+
     }
 }

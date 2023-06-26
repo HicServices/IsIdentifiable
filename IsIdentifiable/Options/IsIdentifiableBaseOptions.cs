@@ -13,7 +13,7 @@ namespace IsIdentifiable.Options;
 /// <summary>
 /// Base class for all options that go to a datasource.  Implement on each new place e.g. dicom, DBMS, CSV etc
 /// </summary>
-public class IsIdentifiableBaseOptions : ITargetsFileOptions
+public abstract class IsIdentifiableBaseOptions
 {
     /// <summary>
     /// Optional. Full connection string to the database storing the Allowlist of valid entries
@@ -126,7 +126,7 @@ public class IsIdentifiableBaseOptions : ITargetsFileOptions
     /// <summary>
     /// Default value for <see cref="RulesFile"/>.
     /// </summary>
-    public const string DefaultRulesFile = "Rules.yaml";
+    public const string DefaultRulesFile = "_rules.yaml";
 
     /// <summary>
     /// Optional. Filename of additional rules in yaml format.  See also <see cref="RulesDirectory"/> to use multiple

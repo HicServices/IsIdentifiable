@@ -1,101 +1,80 @@
-﻿using System;
+using ii.Views;
+using ii.Views.Manager;
+using IsIdentifiable.Failures;
+using IsIdentifiable.Options;
+using IsIdentifiable.Redacting;
+using IsIdentifiable.Rules;
+using IsIdentifiable.Rules.Storage;
+using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using ii.Views;
-using ii.Views.Manager;
-using IsIdentifiable.Options;
-using IsIdentifiable.Redacting;
-using IsIdentifiable.Reporting;
 using Terminal.Gui;
 
 namespace ii;
 
-class MainWindow : IRulePatternFactory, IDisposable
+class MainWindow : IDisposable
 {
     /// <summary>
     /// The report CSV file that is currently open
     /// </summary>
     public ReportReader? CurrentReport { get; set; }
 
-    /// <summary>
-    /// Generates suggested ignore rules for false positives
-    /// </summary>
-    public IgnoreRuleGenerator Ignorer { get; }
-
-    /// <summary>
-    /// Updates the database to perform redactions (when not operating in Rules Only mode)
-    /// </summary>
-    public RowUpdater Updater { get;  } 
-
-    /// <summary>
-    /// Width of modal popup dialogues
-    /// </summary>
-    public static int DlgWidth = 78;
-
-    /// <summary>
-    /// Height of modal popup dialogues
-    /// </summary>
-    public static int DlgHeight = 18;
-
-    /// <summary>
-    /// Border boundary of modal popup dialogues
-    /// </summary>
-    public static int DlgBoundary = 2;
-
     private readonly FailureView _valuePane;
     private readonly Label _info;
     private readonly SpinnerView _spinner;
     private readonly TextField _gotoTextField;
-    private readonly IRulePatternFactory _origUpdaterRulesFactory;
-    private readonly IRulePatternFactory _origIgnorerRulesFactory;
     private readonly Label _ignoreRuleLabel;
     private readonly Label _updateRuleLabel;
     private readonly Label _currentReportLabel;
 
+    private readonly IRegexRuleStore _ignoreActionRuleStore;
+    private readonly IRegexRuleStore _reportActionRuleStore;
+
     /// <summary>
     /// Record of new rules added (e.g. Ignore with pattern X) along with the index of the failure.  This allows undoing user decisions
     /// </summary>
-    readonly Stack<MainWindowHistory> History = new();
+    private readonly Stack<int> _history = new();
 
-    readonly ColorScheme _greyOnBlack = new()
+    private readonly ColorScheme _greyOnBlack = new()
     {
-        Normal = Application.Driver.MakeAttribute(Color.Black,Color.Gray),
-        HotFocus = Application.Driver.MakeAttribute(Color.Black,Color.Gray),
-        Disabled = Application.Driver.MakeAttribute(Color.Black,Color.Gray),
-        Focus = Application.Driver.MakeAttribute(Color.Black,Color.Gray),
+        Normal = Application.Driver.MakeAttribute(Color.Black, Color.Gray),
+        HotFocus = Application.Driver.MakeAttribute(Color.Black, Color.Gray),
+        Disabled = Application.Driver.MakeAttribute(Color.Black, Color.Gray),
+        Focus = Application.Driver.MakeAttribute(Color.Black, Color.Gray),
     };
-    private readonly MenuItem miCustomPatterns;
-    private readonly RulesView rulesView;
-    private readonly AllRulesManagerView rulesManager;
+
+    private readonly MenuItem _miCustomPatterns;
+    private readonly RulesView _rulesView;
+    private readonly AllRulesManagerView _rulesManager;
+
     private readonly IFileSystem _fileSystem;
 
     public MenuBar Menu { get; private set; }
 
     public View Body { get; private set; }
 
-    Task? taskToLoadNext;
-    private const string PatternHelp = @"x - clears currently typed pattern
-F - creates a regex pattern that matches the full input value
-G - creates a regex pattern that matches only the failing part(s)
-\d - replaces all digits with regex wildcards
-\c - replaces all characters with regex wildcards
-\d\c - replaces all digits and characters with regex wildcards";
+    private Task? _taskToLoadNext;
 
     private readonly View viewMain;
 
-    public MainWindow(IsIdentifiableBaseOptions analyserOpts, IsIdentifiableReviewerOptions opts, IgnoreRuleGenerator ignorer, RowUpdater updater, IFileSystem fileSystem)
+    public MainWindow(
+        IsIdentifiableBaseOptions analyserOpts,
+        IsIdentifiableReviewerOptions opts,
+        RegexRuleStore ignoreActionRuleStore,
+        RegexRuleStore reportActionRuleStore,
+        IFileSystem fileSystem
+    )
     {
+        // todo remove
         _fileSystem = fileSystem;
 
-        Ignorer = ignorer;
-        Updater = updater;
-        _origUpdaterRulesFactory = updater.RulesFactory;
-        _origIgnorerRulesFactory = ignorer.RulesFactory;
+        _ignoreActionRuleStore = ignoreActionRuleStore;
+        _reportActionRuleStore = reportActionRuleStore;
+
 
         Menu = new MenuBar(new MenuBarItem[] {
             new("_File (F9)", new MenuItem [] {
@@ -103,20 +82,20 @@ G - creates a regex pattern that matches only the failing part(s)
                 new("_Quit", null, static () => Application.RequestStop())
             }),
             new("_Options", new MenuItem [] {
-                miCustomPatterns = new MenuItem("_Custom Patterns",null,ToggleCustomPatterns){CheckType = MenuItemCheckStyle.Checked,Checked = false}
+                _miCustomPatterns = new MenuItem("_Custom Patterns",null,ToggleCustomPatterns){CheckType = MenuItemCheckStyle.Checked,Checked = false}
             })
         });
 
 
         viewMain = new View() { Width = Dim.Fill(), Height = Dim.Fill() };
-        rulesView = new RulesView();
-        rulesManager = new AllRulesManagerView(analyserOpts, opts, fileSystem);
+        _rulesView = new RulesView(_miCustomPatterns, ignoreActionRuleStore, reportActionRuleStore);
+        _rulesManager = new AllRulesManagerView(analyserOpts, opts, fileSystem);
 
         _info = new Label("Info")
         {
             X = 0,
             Y = 0,
-            Width = Dim.Fill()-1,
+            Width = Dim.Fill() - 1,
             Height = 1,
             ColorScheme = _greyOnBlack
         };
@@ -144,12 +123,12 @@ G - creates a regex pattern that matches only the failing part(s)
         ignoreButton.Clicked += Ignore;
         frame.Add(ignoreButton);
 
-        var updateButton = new Button("Update")
+        var reportButton = new Button("Report")
         {
             X = 11
         };
-        updateButton.Clicked += Update;
-        frame.Add(updateButton);
+        reportButton.Clicked += Report;
+        frame.Add(reportButton);
 
         _gotoTextField = new TextField("1")
         {
@@ -187,15 +166,12 @@ G - creates a regex pattern that matches only the failing part(s)
         frame.Add(new Label(0, 4, "Default Patterns"));
 
         _ignoreRuleLabel = new Label() { X = 0, Y = 5, Text = "Ignore:", Width = 30, Height = 1 }; ;
-        _updateRuleLabel = new Label() { X = 0, Y = 6, Text = "Update:", Width = 30, Height = 1 }; ;
-        _currentReportLabel = new Label() { X = 0, Y= 8, Text = "Report:", Width = 30, Height = 1};
+        _updateRuleLabel = new Label() { X = 0, Y = 6, Text = "Report:", Width = 30, Height = 1 }; ;
+        _currentReportLabel = new Label() { X = 0, Y = 8, Text = "Report:", Width = 30, Height = 1 };
 
         frame.Add(_ignoreRuleLabel);
         frame.Add(_updateRuleLabel);
         frame.Add(_currentReportLabel);
-
-        // always run rules only mode for the manual gui
-        Updater.RulesOnly = true;
 
         viewMain.Add(_info);
 
@@ -224,8 +200,8 @@ G - creates a regex pattern that matches only the failing part(s)
         tabView.ApplyStyleChanges();
 
         tabView.AddTab(new TabView.Tab("Sequential", viewMain), true);
-        tabView.AddTab(new TabView.Tab("Tree View", rulesView), false);
-        tabView.AddTab(new TabView.Tab("Rules Manager", rulesManager), false);
+        tabView.AddTab(new TabView.Tab("Tree View", _rulesView), false);
+        tabView.AddTab(new TabView.Tab("Rules Manager", _rulesManager), false);
 
         tabView.SelectedTabChanged += TabView_SelectedTabChanged;
 
@@ -235,37 +211,32 @@ G - creates a regex pattern that matches only the failing part(s)
     private void TabView_SelectedTabChanged(object? sender, TabView.TabChangedEventArgs e)
     {
         // sync the rules up in case people are adding new ones using the other UIs
-        rulesManager.RebuildTree();
+        _rulesManager.RebuildTree();
     }
 
-    private void ToggleCustomPatterns()
-    {
-        miCustomPatterns.Checked = !miCustomPatterns.Checked;
-
-        Updater.RulesFactory = miCustomPatterns.Checked ? this : _origUpdaterRulesFactory;
-        Ignorer.RulesFactory = miCustomPatterns.Checked ? this : _origIgnorerRulesFactory;
-    }
+    private void ToggleCustomPatterns() => _miCustomPatterns.Checked = !_miCustomPatterns.Checked;
 
     private void Undo()
     {
-        if (History.Count == 0)
+        if (_history.Count == 0)
         {
-            ShowMessage("History Empty","Cannot undo, history is empty");
+            ViewHelpers.ShowMessage("_history Empty", "Cannot undo, history is empty");
             return;
         }
 
-        var popped = History.Pop();
+        var popped = _history.Pop();
 
+        // TODO
         //undo file history
-        popped.OutputBase.Undo();
+        //popped.OutputBase.Undo();
 
         //wind back UI
-        GoTo(popped.Index);
+        GoTo(popped);
     }
 
     private void GoToRelative(int offset)
     {
-        if(CurrentReport == null)
+        if (CurrentReport == null)
             return;
 
         GoTo(CurrentReport.CurrentIndex + offset);
@@ -273,66 +244,62 @@ G - creates a regex pattern that matches only the failing part(s)
 
     private void GoTo()
     {
-        if(CurrentReport == null)
+        if (CurrentReport == null)
             return;
 
         try
         {
             var val = _gotoTextField.Text?.ToString();
-            if(val != null)
+            if (val != null)
             {
                 GoTo(int.Parse(val));
             }
 
         }
-        catch (FormatException)
+        catch (FormatException _)
         {
             //use typed in 'hello there! or some such'
         }
     }
-        
+
     private void GoTo(int page)
     {
-        if(CurrentReport == null)
+        if (CurrentReport == null)
             return;
+
         try
         {
             CurrentReport.GoTo(page);
             _info.Text = CurrentReport.DescribeProgress();
-            SetupToShow(CurrentReport.Current);
+            SetupToShow(CurrentReport.CurrentFailure);
         }
         catch (Exception e)
         {
-            ShowException("Failed to GoTo",e);
+            ViewHelpers.ShowException("Failed to GoTo", e);
         }
-            
     }
 
-    private void SetupToShow(Failure? f)
+    private void SetupToShow(Failure? failure)
     {
-        _valuePane.CurrentFailure = f;
+        _valuePane.CurrentFailure = failure;
 
-        if (f != null)
+        if (failure != null)
         {
-            _ignoreRuleLabel.Text = $"Ignore:{_origIgnorerRulesFactory.GetPattern(Ignorer, f)}";
-            _updateRuleLabel.Text = $"Update:{_origUpdaterRulesFactory.GetPattern(Ignorer, f)}";
+            _ignoreRuleLabel.Text = $"Ignore:{RegexRuleFactory.IfFPatternForWholeProblemValue(failure)}";
+            _updateRuleLabel.Text = $"Report:{RegexRuleFactory.IfPatternForRuleMatchingProblemValues(failure)}";
         }
         else
         {
             _ignoreRuleLabel.Text = "Ignore:";
-            _updateRuleLabel.Text = "Update:";
+            _updateRuleLabel.Text = "Report:";
         }
     }
 
-
-    private void BeginNext()
-    {
-        taskToLoadNext = Task.Run(Next);   
-    }
+    private void BeginNext() => _taskToLoadNext = Task.Run(Next);
 
     private void Next()
     {
-        if(_valuePane.CurrentFailure == null || CurrentReport == null)
+        if (_valuePane.CurrentFailure == null || CurrentReport == null)
             return;
 
         _spinner.Visible = true;
@@ -341,26 +308,26 @@ G - creates a regex pattern that matches only the failing part(s)
         var updated = 0;
         try
         {
-            while(CurrentReport.Next())
+            while (CurrentReport.Next())
             {
-                var next = CurrentReport.Current;
-
-                //prefer rules that say we should update the database with redacted over rules that say we should ignore the problem
-                if (!Updater.OnLoad(null,next, out _))
+                if (_reportActionRuleStore.HasRuleCovering(CurrentReport.CurrentFailure, out var reportActionRule))
+                {
                     updated++;
-                else if (!Ignorer.OnLoad(next,out _))
+                }
+                else if (_ignoreActionRuleStore.HasRuleCovering(CurrentReport.CurrentFailure, out _))
+                {
                     skipped++;
+                }
                 else
                 {
-                    SetupToShow(next);
-
+                    SetupToShow(CurrentReport.CurrentFailure);
                     break;
                 }
             }
         }
         catch (Exception e)
         {
-            ShowException("Error moving to next record",e);
+            ViewHelpers.ShowException("Error moving to next record", e);
         }
         finally
         {
@@ -377,19 +344,19 @@ G - creates a regex pattern that matches only the failing part(s)
             info.Append($" Auto Updated {updated}");
 
         if (CurrentReport.Exhausted)
-        {
             info.Append(" (End of Failures)");
-        }
 
         _info.Text = info.ToString();
     }
-        
+
     private void Ignore()
     {
-        if(_valuePane.CurrentFailure == null || CurrentReport == null)
+        var failure = _valuePane.CurrentFailure;
+
+        if (failure == null || CurrentReport == null)
             return;
 
-        if(taskToLoadNext!= null && !taskToLoadNext.IsCompleted)
+        if (_taskToLoadNext != null && !_taskToLoadNext.IsCompleted)
         {
             MessageBox.Query("StillLoading", "Load next is still running");
             return;
@@ -397,22 +364,31 @@ G - creates a regex pattern that matches only the failing part(s)
 
         try
         {
-            Ignorer.Add(_valuePane.CurrentFailure);
-            History.Push(new MainWindowHistory(CurrentReport.CurrentIndex,Ignorer));
+            IRegexRule rule = _ignoreActionRuleStore.DefaultRuleFor(failure);
+
+            if (_miCustomPatterns.Checked)
+                rule = ViewHelpers.GetCustomRule(failure, rule);
+
+            _ignoreActionRuleStore.Add(rule);
+            _history.Push(CurrentReport.CurrentIndex);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException _)
         {
             //if user cancels adding the ignore then stay on the same record
             return;
         }
+
         BeginNext();
     }
-    private void Update()
+
+    private void Report()
     {
-        if(_valuePane.CurrentFailure == null || CurrentReport == null)
+        var failure = _valuePane.CurrentFailure;
+
+        if (failure == null || CurrentReport == null)
             return;
 
-        if (taskToLoadNext != null && !taskToLoadNext.IsCompleted)
+        if (_taskToLoadNext != null && !_taskToLoadNext.IsCompleted)
         {
             MessageBox.Query("StillLoading", "Load next is still running");
             return;
@@ -420,10 +396,13 @@ G - creates a regex pattern that matches only the failing part(s)
 
         try
         {
-            // TODO(rkm 2021-04-09) Server always passed as null here, but Update seems to require it?
-            Updater.Update(null, _valuePane.CurrentFailure, null /*create one yourself*/);
+            IRegexRule rule = _reportActionRuleStore.DefaultRuleFor(failure);
 
-            History.Push(new MainWindowHistory(CurrentReport.CurrentIndex,Updater));
+            if (_miCustomPatterns.Checked)
+                rule = ViewHelpers.GetCustomRule(failure, rule);
+
+            _reportActionRuleStore.Add(rule);
+            _history.Push(CurrentReport.CurrentIndex);
         }
         catch (OperationCanceledException)
         {
@@ -432,7 +411,7 @@ G - creates a regex pattern that matches only the failing part(s)
         }
         catch (Exception e)
         {
-            ShowException("Failed to update database",e);
+            ViewHelpers.ShowException("Failed to update database", e);
             return;
         }
 
@@ -443,7 +422,7 @@ G - creates a regex pattern that matches only the failing part(s)
     {
         using var ofd = new OpenDialog("Load CSV Report", "Enter file path to load")
         {
-            AllowedFileTypes = new[] {".csv"}, 
+            AllowedFileTypes = new[] { ".csv" },
             CanChooseDirectories = false,
             AllowsMultipleSelection = false
         };
@@ -455,15 +434,15 @@ G - creates a regex pattern that matches only the failing part(s)
         Exception? ex = null;
         OpenReport(f, (e) => ex = e);
 
-        if(ex != null)
+        if (ex != null)
         {
-            ShowException("Failed to Load", ex);
+            ViewHelpers.ShowException("Failed to Load", ex);
         }
     }
 
     private void OpenReport(string? path, Action<Exception> exceptionHandler)
     {
-        if ( path == null)
+        if (path == null)
             return;
 
         var cts = new CancellationTokenSource();
@@ -473,38 +452,45 @@ G - creates a regex pattern that matches only the failing part(s)
         void closeFunc() { Application.RequestStop(); }
         btn.Clicked += cancelFunc;
 
-        using var dlg = new Dialog("Opening",MainWindow.DlgWidth,5,btn);
-        var rows = new Label($"Loaded: 0 rows"){
-            Width = Dim.Fill() };
+        using var dlg = new Dialog("Opening", ViewConstants.DlgWidth, 5, btn);
+        var rows = new Label($"Loaded: 0 rows")
+        {
+            Width = Dim.Fill()
+        };
         dlg.Add(rows);
 
         var done = false;
 
-        Application.MainLoop.AddTimeout(TimeSpan.FromSeconds(1),(s) =>
+        Application.MainLoop.AddTimeout(TimeSpan.FromSeconds(1), (s) =>
         {
             dlg.SetNeedsDisplay();
             return !done;
         });
 
-        Task.Run(()=>{
-                try
-                {
-                    CurrentReport = new ReportReader(_fileSystem.FileInfo.New(path),(s)=>
-                        rows.Text = $"Loaded: {s:N0} rows", _fileSystem, cts.Token);
-                    SetupToShow(CurrentReport.Failures.FirstOrDefault());
-                    BeginNext();
+        Task.Run(() =>
+        {
+            try
+            {
+                CurrentReport = new ReportReader(
+                    _fileSystem.FileInfo.New(path),
+                    (s) => rows.Text = $"Loaded: {s:N0} rows",
+                    cts.Token
+                );
+                SetupToShow(CurrentReport.Failures.FirstOrDefault());
+                BeginNext();
 
-                    rulesView.LoadReport(CurrentReport, Ignorer, Updater, _origIgnorerRulesFactory);
-                }
-                catch (Exception e)
-                {
-                    exceptionHandler(e);
-                    rows.Text = "Error";
-                } 
-              
+                _rulesView.LoadReport(CurrentReport);
             }
-        ).ContinueWith((t)=>{
-                
+            catch (Exception e)
+            {
+                exceptionHandler(e);
+                rows.Text = "Error";
+            }
+
+        }
+        ).ContinueWith((t) =>
+        {
+
             btn.Clicked -= cancelFunc;
             btn.Text = "Done";
             btn.Clicked += closeFunc;
@@ -519,256 +505,6 @@ G - creates a regex pattern that matches only the failing part(s)
         Application.Run(dlg);
     }
 
-    public static void ShowMessage(string title, string body)
-    {
-        RunDialog(title,body,out _,"Ok");
-    }
-
-    public static void ShowException(string msg, Exception e)
-    {
-        var e2 = e;
-        const string stackTraceOption = "Stack Trace";
-        StringBuilder sb = new();
-
-        while (e2 != null)
-        {
-            sb.AppendLine(e2.Message);
-            e2 = e2.InnerException;
-        }
-
-        if (GetChoice(msg, sb.ToString(), out string? chosen, "Ok", stackTraceOption) &&
-            string.Equals(chosen, stackTraceOption)) 
-            ShowMessage("Stack Trace", e.ToString());
-    }
-    public static bool GetChoice<T>(string title, string body, out T? chosen, params T[] options)
-    {
-        return RunDialog(title, body, out chosen, options);
-    }
-
-    public static bool RunDialog<T>(string title, string message,out T? chosen, params T[] options)
-    {
-        var result = default(T);
-        var optionChosen = false;
-
-        using var dlg = new Dialog(title, Math.Min(Console.WindowWidth,DlgWidth), DlgHeight);
-            
-        var line = DlgHeight - (DlgBoundary)*2 - options.Length;
-
-        if (!string.IsNullOrWhiteSpace(message))
-        {
-            var width = Math.Min(Console.WindowWidth,DlgWidth) - (DlgBoundary * 2);
-
-            var msg = Wrap(message, width-1).TrimEnd();
-
-            var text = new Label(0, 0, msg)
-            {
-                Height = line - 1, Width = width
-            };
-
-            //if it is too long a message
-            var newlines = msg.Count(c => c == '\n');
-            if (newlines > line - 1)
-            {
-                var view = new ScrollView(new Rect(0, 0, width, line - 1))
-                {
-                    ContentSize = new Size(width, newlines + 1),
-                    ContentOffset = new Point(0, 0),
-                    ShowVerticalScrollIndicator = true,
-                    ShowHorizontalScrollIndicator = false
-                };
-                view.Add(text);
-                dlg.Add(view);
-            }
-            else
-                dlg.Add(text);
-        }
-            
-        foreach (var value in options)
-        {
-            var v1 = value;
-
-            var name = value?.ToString() ?? "";
-
-            var btn = new Button(0, line++, name);
-            btn.Clicked += () =>
-            {
-                result = v1;
-                dlg.Running = false;
-                optionChosen = true;
-            };
-
-            dlg.Add(btn);
-
-            if(options.Length == 1)
-                dlg.FocusFirst();
-        }
-
-        Application.Run(dlg);
-
-        chosen = result;
-        return optionChosen;
-    }
-    private static bool GetText(string title, string message, string initialValue, out string chosen,
-        Dictionary<string, string> buttons)
-    {
-        var optionChosen = false;
-
-        using var dlg = new Dialog(title, Math.Min(Console.WindowWidth,DlgWidth), DlgHeight);
-
-        var line = DlgHeight - (DlgBoundary)*2 - 2;
-
-        if (!string.IsNullOrWhiteSpace(message))
-        {
-            var width = Math.Min(Console.WindowWidth,DlgWidth) - (DlgBoundary * 2);
-
-            var msg = Wrap(message, width-1).TrimEnd();
-
-            var text = new Label(0, 0, msg)
-            {
-                Height = line - 1, Width = width
-            };
-
-            //if it is too long a message
-            var newlines = msg.Count(c => c == '\n');
-            if (newlines > line - 1)
-            {
-                var view = new ScrollView(new Rect(0, 0, width, line - 1))
-                {
-                    ContentSize = new Size(width, newlines + 1),
-                    ContentOffset = new Point(0, 0),
-                    ShowVerticalScrollIndicator = true,
-                    ShowHorizontalScrollIndicator = false
-                };
-                view.Add(text);
-                dlg.Add(view);
-            }
-            else
-                dlg.Add(text);
-        }
-
-        var txt = new TextField(0, line++, DlgWidth -4 ,initialValue ?? "");
-        dlg.Add(txt);
-
-        var btn = new Button(0, line, "Ok")
-        {
-            IsDefault = true
-        };
-        btn.Clicked += () =>
-        {
-            if (!string.IsNullOrWhiteSpace(txt.Text?.ToString()))
-            {
-                dlg.Running = false;
-                optionChosen = true;
-            }
-        };
-        dlg.Add(btn);
-
-
-        var x = 10;
-        if(buttons != null)
-            foreach (var kvp in buttons)
-            {
-                var button = new Button(x, line,kvp.Key);
-                button.Clicked += () => { txt.Text = kvp.Value; };
-                dlg.Add(button);
-                x += kvp.Key.Length + 5;
-            }
-
-
-        // add help button
-        var btnHelp = new Button(0, line, "?")
-        {
-            X = x
-        };
-        x += 6;
-
-        btnHelp.Clicked += () =>
-        {
-            MessageBox.Query("Pattern Help", PatternHelp, "Ok");
-        };
-        dlg.Add(btnHelp);
-
-        // add cancel button
-        var btnCancel = new Button(0, line, "Cancel")
-        {
-            X = x
-        };
-        //x += 11;
-        btnCancel.Clicked += () =>
-        {
-            optionChosen = false;
-            Application.RequestStop();
-        };
-        dlg.Add(btnCancel);
-
-        dlg.FocusFirst();
-        
-
-        Application.Run(dlg);
-
-        chosen = txt.Text?.ToString() ?? "";
-        return optionChosen;
-    }
-         
-    public static string Wrap(string s, int width)
-    {
-        var r = new Regex(
-            $@"(?:((?>.{{1,{width}}}(?:(?<=[^\S\r\n])[^\S\r\n]?|(?=\r?\n)|$|[^\S\r\n]))|.{{1,16}})(?:\r?\n)?|(?:\r?\n|$))");
-        return r.Replace(s, "$1\n");
-    }
-
-    public string GetPattern(object sender,Failure failure)
-    {
-        var defaultFactory = ReferenceEquals(sender,Updater) ? _origUpdaterRulesFactory : _origIgnorerRulesFactory;
-
-        var recommendedPattern = defaultFactory.GetPattern(sender,failure);
-
-        var buttons = new Dictionary<string, string>
-        {
-            { "x", "" },
-            { "F", _origIgnorerRulesFactory.GetPattern(sender, failure) },
-            { "G", _origUpdaterRulesFactory.GetPattern(sender, failure) },
-
-            { @"\d", new SymbolsRulesFactory { Mode = SymbolsRuleFactoryMode.DigitsOnly }.GetPattern(sender, failure) },
-            { @"\c", new SymbolsRulesFactory { Mode = SymbolsRuleFactoryMode.CharactersOnly }.GetPattern(sender, failure) },
-            { @"\d\c", new SymbolsRulesFactory().GetPattern(sender, failure) }
-        };
-
-
-
-        if (GetText("Pattern", "Enter pattern to match failure", recommendedPattern, out var chosen,buttons))
-        {
-            Regex regex;
-
-            try
-            {
-                regex = new Regex(chosen);
-            }
-            catch (Exception)
-            {
-                ShowMessage("Invalid Regex","Pattern was not a valid Regex");
-                //try again!
-                return GetPattern(sender,failure);
-            }
-
-            if (!regex.IsMatch(failure.ProblemValue))
-            {
-                GetChoice("Pattern Match Failure","The provided pattern did not match the original ProblemValue.  Try a different pattern?",out var retry,new []{"Yes","No"});
-
-                if (retry == "Yes")
-                    return GetPattern(sender,failure);
-            }
-                 
-            if(string.IsNullOrWhiteSpace(chosen))
-                throw new Exception("User entered blank Regex pattern");
-
-            return chosen;
-        }
-                
-            
-        throw new OperationCanceledException("User chose not to enter a pattern");
-    }
-
     public void Dispose()
     {
         _valuePane.Dispose();
@@ -778,9 +514,9 @@ G - creates a regex pattern that matches only the failing part(s)
         _ignoreRuleLabel.Dispose();
         _updateRuleLabel.Dispose();
         _currentReportLabel.Dispose();
-        rulesView.Dispose();
-        rulesManager.Dispose();
-        taskToLoadNext?.Dispose();
+        _rulesView.Dispose();
+        _rulesManager.Dispose();
+        _taskToLoadNext?.Dispose();
         viewMain.Dispose();
         Menu.Dispose();
         Body.Dispose();

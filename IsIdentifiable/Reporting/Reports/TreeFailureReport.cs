@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+using IsIdentifiable.Failures;
+using IsIdentifiable.Options;
+using System.Collections.Generic;
 using System.Data;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Text.RegularExpressions;
-using IsIdentifiable.Options;
 
 namespace IsIdentifiable.Reporting.Reports;
 
@@ -16,8 +16,6 @@ internal class TreeFailureReport : FailureReport
     private const int TOTAL_FAILED_IDX = 1;
 
     private readonly string[] _headerRow = { "Node", "TotalSeen", "TotalFailed", "PercentFailed" };
-
-    private readonly Regex _nodeRegex = new(@"\[\d+]->");
 
     private readonly object _nodeFailuresLock = new();
 
@@ -71,7 +69,7 @@ internal class TreeFailureReport : FailureReport
                 dt.Rows.Add(item.Key, seen, failed, 100.0 * failed / seen);
             }
 
-        foreach(var d in Destinations)
+        foreach (var d in Destinations)
             d.WriteItems(dt);
     }
 
@@ -86,8 +84,9 @@ internal class TreeFailureReport : FailureReport
         }
     }
 
-    private void GenerateAggregateCounts()
+    private static void GenerateAggregateCounts()
     {
+        // Regex _nodeRegex = new(@"\[\d+]->");
         // lock (_nodeFailuresLock)
         // {
         //     foreach (var failureInfo in _nodeFailures.Where(failureInfo => !_nodeRegex.IsMatch(failureInfo.Key)))

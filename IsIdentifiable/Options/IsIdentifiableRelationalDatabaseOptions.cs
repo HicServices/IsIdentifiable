@@ -72,7 +72,7 @@ public class IsIdentifiableRelationalDatabaseOptions : IsIdentifiableBaseOptions
     }
 
     /// <summary>
-    /// Updates all base class connection strings and <see cref="DatabaseConnectionString"/> to use
+    /// Redacts all base class connection strings and <see cref="DatabaseConnectionString"/> to use
     /// named servers if specified
     /// </summary>
     /// <param name="targets"></param>

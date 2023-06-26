@@ -1,4 +1,4 @@
-﻿using IsIdentifiable.Options;
+using IsIdentifiable.Options;
 using IsIdentifiable.Runners;
 using Rdmp.Core.CommandExecution;
 using Rdmp.Core.Curation.Data;
@@ -12,7 +12,7 @@ internal class ExecuteCommandRunIsIdentifiable : BasicCommandExecution
 {
     private readonly ICatalogue _catalogue;
     private readonly FileInfo? _configYaml;
-    private ITableInfo? _table;
+    private readonly ITableInfo? _table;
 
     public ExecuteCommandRunIsIdentifiable(IBasicActivateItems activator, ICatalogue catalogue, FileInfo? configYaml ) : base(activator)
     {

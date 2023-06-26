@@ -1,6 +1,3 @@
-using System;
-using System.IO.Abstractions;
-using System.Linq;
 using CommandLine;
 using FAnsi.Implementation;
 using FAnsi.Implementations.MicrosoftSQL;
@@ -8,9 +5,18 @@ using FAnsi.Implementations.MySql;
 using FAnsi.Implementations.Oracle;
 using FAnsi.Implementations.PostgreSql;
 using FellowOakDicom;
+using IsIdentifiable.Helpers;
 using IsIdentifiable.Options;
+using IsIdentifiable.Redacting;
+using IsIdentifiable.Rules;
+using IsIdentifiable.Rules.Storage;
 using IsIdentifiable.Runners;
 using Microsoft.Extensions.FileSystemGlobbing;
+using NLog;
+using System;
+using System.Collections.Generic;
+using System.IO.Abstractions;
+using System.Linq;
 using YamlDotNet.Serialization;
 
 namespace ii;
@@ -21,7 +27,7 @@ public static class Program
     static GlobalOptions? GlobalOptions;
 
 
-    public static string? CutSettingsFileArgs(string []args, out string[] newArgs )
+    public static string? CutSettingsFileArgs(string[] args, out string[] newArgs)
     {
         var idx = Array.IndexOf(args, "-y");
 
@@ -29,7 +35,7 @@ public static class Program
         if (idx != -1 && idx < args.Length - 1)
         {
             var settingsFileLocation = args[idx + 1];
-                        
+
             // remove -y myfile
             newArgs = args.Take(idx).ToArray();
 
@@ -68,7 +74,7 @@ public static class Program
         }
 
         // load GlobalOptions
-        if(fileSystem.File.Exists(settingsFileLocation))
+        if (fileSystem.File.Exists(settingsFileLocation))
         {
             try
             {
@@ -80,7 +86,7 @@ public static class Program
                 return 1;
             }
         }
-        
+
         // Disable fo-dicom's DICOM validation globally from here
         new DicomSetupBuilder().SkipValidation();
 
@@ -107,10 +113,10 @@ public static class Program
                 (IsIdentifiableMongoOptions o) => Run(o, fileSystem),
                 (IsIdentifiableFileGlobOptions o) => Run(o, fileSystem),
                 (IsIdentifiableReviewerOptions o) => Run(o, fileSystem),
-                
+
                 // return exit code 0 for user requests for help
-                errors => args.Any(a=>a.Equals("--help",StringComparison.InvariantCultureIgnoreCase)) ? 0: 1);
-            
+                errors => args.Any(a => a.Equals("--help", StringComparison.InvariantCultureIgnoreCase)) ? 0 : 1);
+
         return res;
     }
 
@@ -126,6 +132,72 @@ public static class Program
     private static int Run(IsIdentifiableReviewerOptions opts, IFileSystem fileSystem)
     {
         Inherit(opts);
+
+        var logger = LogManager.GetCurrentClassLogger();
+
+        if (!opts.OnlyRules)
+        {
+            ImplementationManager.Load<MicrosoftSQLImplementation>();
+            ImplementationManager.Load<MySqlImplementation>();
+            ImplementationManager.Load<PostgreSqlImplementation>();
+            ImplementationManager.Load<OracleImplementation>();
+
+            logger.Info("Running Connection Tests");
+
+            List<Target> targets;
+
+            try
+            {
+
+                IsIdentifiableBaseOptions.LoadTargets(opts, logger, fileSystem, out targets);
+            }
+            catch (Exception e)
+            {
+                logger.Error(e, "Error Validating Targets");
+                return 1;
+            }
+
+            foreach (var target in targets)
+            {
+                var discoveredServer = target.Discover();
+                if (discoveredServer.Exists())
+                {
+                    logger.Info($"Successfully connected to {target.Name}");
+                }
+                else
+                {
+                    logger.Error($"Failed to connect to {target.Name}");
+                    return 1;
+                }
+            }
+
+
+            return 0;
+        }
+
+        var ignoreActionRuleStore = new YamlRegexRuleStore(
+            new RegexRuleGenerator(RegexRuleFactory.IfFPatternForWholeProblemValue, RuleAction.Ignore),
+            fileSystem.FileInfo.New(opts.IgnoreList),
+            new DateTimeProvider()
+        );
+
+        var reportActionRuleStore = new YamlRegexRuleStore(
+            new RegexRuleGenerator(RegexRuleFactory.IfPatternForRuleMatchingProblemValues, RuleAction.Report),
+            fileSystem.FileInfo.New(opts.Reportlist),
+            new DateTimeProvider()
+        );
+
+        if (!string.IsNullOrWhiteSpace(opts.UnattendedOutputPath))
+        {
+            //run unattended
+            if (opts.targets.Count != 1)
+                throw new Exception("Unattended requires a single entry in Targets");
+
+            var unattended = new DatabaseRedactor(_reviewerOptions, _targets.Single(), _ignoreActionRuleStore, _reportActionRuleStore, _fileSystem);
+            unattended.Run();
+
+            return 0;
+        }
 
         var reviewer = new ReviewerRunner(GlobalOptions?.IsIdentifiableOptions, opts, fileSystem);
         return reviewer.Run();
@@ -176,7 +248,7 @@ public static class Program
         if (opts.File == null)
         {
             throw new Exception("You must specify a File or Directory indicate which files to work on");
-        }           
+        }
 
         // if user has specified the full path of a file to -f
         if (fileSystem.File.Exists(opts.File.FullName))
@@ -193,7 +265,7 @@ public static class Program
         }
 
         // user has specified a directory as -f
-        if(fileSystem.Directory.Exists(opts.File.FullName))
+        if (fileSystem.Directory.Exists(opts.File.FullName))
         {
             Matcher matcher = new();
             matcher.AddInclude(opts.Glob);
@@ -237,7 +309,7 @@ public static class Program
     }
     private static void Inherit(IsIdentifiableReviewerOptions opts)
     {
-        if(GlobalOptions?.IsIdentifiableReviewerOptions != null)
+        if (GlobalOptions?.IsIdentifiableReviewerOptions != null)
         {
             opts.InheritValuesFrom(GlobalOptions.IsIdentifiableReviewerOptions);
         }

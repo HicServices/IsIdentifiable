@@ -11,7 +11,7 @@ namespace IsIdentifiable.Rules;
 public class ConsensusRule : IAppliableRule
 {
     /// <summary>
-    /// Rules which must all reach a consesus on classifications
+    /// _rules which must all reach a consesus on classifications
     /// </summary>
     public IAppliableRule[] Rules {get;set;}
 

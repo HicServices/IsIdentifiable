@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using FAnsi.Discovery;
 using IsIdentifiable.Failures;
-using IsIdentifiable.Reporting;
 using IsIdentifiable.Rules;
 
 namespace IsIdentifiable.Redacting.UpdateStrategies;
@@ -20,7 +19,7 @@ public class ProblemValuesUpdateStrategy : UpdateStrategy
     /// <param name="usingRule"></param>
     /// <returns></returns>
     public override IEnumerable<string> GetUpdateSql(DiscoveredTable table,
-        Dictionary<DiscoveredTable, DiscoveredColumn> primaryKeys, Failure failure, IRegexRule usingRule)
+        Dictionary<DiscoveredTable, DiscoveredColumn> primaryKeys, Failure failure, IRegexRule _)
     {
         var syntax = table.GetQuerySyntaxHelper();
 

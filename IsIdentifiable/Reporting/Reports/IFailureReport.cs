@@ -1,4 +1,5 @@
 ﻿
+using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
 
 namespace IsIdentifiable.Reporting.Reports;

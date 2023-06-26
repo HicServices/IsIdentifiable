@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
-using IsIdentifiable.Reporting;
 using NLog;
 using CsvHelper;
 using System.Globalization;

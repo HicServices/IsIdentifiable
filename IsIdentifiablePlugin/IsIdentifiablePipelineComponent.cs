@@ -1,4 +1,5 @@
-﻿using IsIdentifiable.Options;
+using IsIdentifiable.Failures;
+using IsIdentifiable.Options;
 using IsIdentifiable.Reporting;
 using IsIdentifiable.Runners;
 using Rdmp.Core.Curation.Data;

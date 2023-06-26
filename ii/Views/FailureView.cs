@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using IsIdentifiable.Reporting;
+using IsIdentifiable.Failures;
 using Terminal.Gui;
 using Attribute = Terminal.Gui.Attribute;
 
@@ -35,7 +35,7 @@ class FailureView : View
             if (toDisplay[i] == '\n')
                 originalNewlines.Add(i);
 
-        var lines = MainWindow.Wrap(toDisplay, bounds.Width).Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        var lines = ViewHelpers.Wrap(toDisplay, bounds.Width).Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
         var characterOffset = 0;
         Attribute? oldColor = null;

@@ -14,7 +14,6 @@ using IsIdentifiable.Rules;
 using Microsoft.Extensions.Caching.Memory;
 using NLog;
 using YamlDotNet.Serialization;
-using IsIdentifiable.Reporting;
 using System.Threading;
 using System.IO.Abstractions;
 using IsIdentifiable.AllowLists;
@@ -23,7 +22,7 @@ namespace IsIdentifiable.Runners;
 
 /// <summary>
 /// Base class for all classes which evaluate data sources to detect identifiable data.
-/// Subclass to add support for new data sources.  Current sources include reading from
+/// Subclass to add support for new data sources.  CurrentFailure sources include reading from
 /// CSV files, Dicom files and database tables.
 /// </summary>
 public abstract class IsIdentifiableAbstractRunner : IDisposable
@@ -214,7 +213,7 @@ public abstract class IsIdentifiableAbstractRunner : IDisposable
             }   
             else
             {
-                // file specified did not exist... but that's ok if it's the default (Rules.yaml)
+                // file specified did not exist... but that's ok if it's the default (_rules.yaml)
                 if (_opts.RulesFile != IsIdentifiableBaseOptions.DefaultRulesFile)
                 {
                     throw new Exception($"Error reading {_opts.RulesFile}");
@@ -235,7 +234,7 @@ public abstract class IsIdentifiableAbstractRunner : IDisposable
 
                 if(!any)
                 {
-                    _logger.Warn($"Rules file {fi.FullName} had no rules in it");
+                    _logger.Warn($"_rules file {fi.FullName} had no rules in it");
                 }
                 loadedAtLeastOne = loadedAtLeastOne || any; 
             }
@@ -332,8 +331,8 @@ public abstract class IsIdentifiableAbstractRunner : IDisposable
     {
         var result = false;
 
-        _logger.Info("Loading Rules Yaml");
-        _logger.Debug($"Loading Rules Yaml:{Environment.NewLine}{yaml}");
+        _logger.Info("Loading _rules Yaml");
+        _logger.Debug($"Loading _rules Yaml:{Environment.NewLine}{yaml}");
         var deserializer = GetDeserializer();
         var ruleSet = deserializer.Deserialize<RuleSet>(yaml);
 

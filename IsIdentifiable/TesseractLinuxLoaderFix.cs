@@ -33,7 +33,7 @@ public class TesseractLinuxLoaderFix {
     harmony.Patch(ll.GetMethod("FreeLibrary"), prefix: new HarmonyMethod(self.GetMethod(nameof(FreeLibraryPatch),BindingFlags.NonPublic|BindingFlags.Static)));
   }
 
-  private static bool LoadLibraryPatch(string fileName, string platformName, ref IntPtr __result)
+  private static bool LoadLibraryPatch(string fileName, string _, ref IntPtr __result)
   {
     var fullPath = $"{AppDomain.CurrentDomain.BaseDirectory}/runtimes/linux-x64/native/lib{fileName}.so";
     try {

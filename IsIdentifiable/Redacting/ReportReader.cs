@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
-using IsIdentifiable.Reporting;
+using IsIdentifiable.Failures;
 using IsIdentifiable.Reporting.Reports;
 
 namespace IsIdentifiable.Redacting;
@@ -29,7 +29,7 @@ public class ReportReader
     /// <summary>
     /// The <see cref="CurrentIndex"/> of <see cref="Failures"/> or null
     /// </summary>
-    public Failure Current => _current < Failures.Length ? Failures[_current] : null;
+    public Failure CurrentFailure => _current < Failures.Length ? Failures[_current] : null;
         
     /// <summary>
     /// True if <see cref="CurrentIndex"/> is after the end of the <see cref="Failures"/>
@@ -40,10 +40,9 @@ public class ReportReader
     /// Reads the <paramref name="csvFile"/> and populates <see cref="Failures"/>
     /// </summary>
     /// <param name="csvFile">A CSV file created by a <see cref="FailureStoreReport"/></param>
-    /// <param name="fileSystem"></param>
-    public ReportReader(IFileInfo csvFile, IFileSystem fileSystem)
+    public ReportReader(IFileInfo csvFile)
     {
-        var report = new FailureStoreReport("", 0, fileSystem);
+        var report = new FailureStoreReport("", 0, csvFile.FileSystem);
         Failures = report.Deserialize(csvFile).ToArray();
     }
 
@@ -53,17 +52,16 @@ public class ReportReader
     /// <param name="csvFile"></param>
     /// <param name="loadedRows"></param>
     /// <param name="token"></param>
-    /// <param name="fileSystem"></param>
-    public ReportReader(IFileInfo csvFile, Action<int> loadedRows, IFileSystem fileSystem, CancellationToken token)
+    public ReportReader(IFileInfo csvFile, Action<int> loadedRows, CancellationToken token)
     {
-        var report = new FailureStoreReport("", 0, fileSystem);
+        var report = new FailureStoreReport("", 0, csvFile.FileSystem);
         Failures = FailureStoreReport.Deserialize(csvFile, loadedRows, token).ToArray();
     }
 
     /// <summary>
     /// Advances <see cref="CurrentIndex"/> along 1
     /// </summary>
-    /// <returns>Returns true if a new <see cref="Current"/> is now available or false if it is at the end</returns>
+    /// <returns>Returns true if a new <see cref="CurrentFailure"/> is now available or false if it is at the end</returns>
     public bool Next()
     {
         _current++;
@@ -75,7 +73,7 @@ public class ReportReader
     }
 
     /// <summary>
-    /// Updates <see cref="CurrentIndex"/> to the given value bounded
+    /// Redacts <see cref="CurrentIndex"/> to the given value bounded
     /// by the total number of <see cref="Failures"/>
     /// </summary>
     /// <param name="index"></param>

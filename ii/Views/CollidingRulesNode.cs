@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using IsIdentifiable.Reporting;
+using System.Collections.Generic;
+using IsIdentifiable.Failures;
 using IsIdentifiable.Rules;
 using Terminal.Gui.Trees;
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.IO.Abstractions;
+using IsIdentifiable.Failures;
 
 namespace IsIdentifiable.Reporting.Reports;
 
