@@ -10,7 +10,7 @@ namespace IsIdentifiable.Tests;
 
 internal class ExampleUsage
 {
-    class CustomRunner : IsIdentifiableAbstractRunner
+    class CustomRunner : RunnerBase
     {
         public CustomRunner(IFailureReport report, MockFileSystem fileSystem)
             : base(new IsIdentifiableOptions(), fileSystem, report)

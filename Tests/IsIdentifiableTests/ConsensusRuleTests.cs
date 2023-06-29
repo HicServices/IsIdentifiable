@@ -81,7 +81,7 @@ class ConsensusRuleTests
           Port: 567";
 
 
-        var deserializer = IsIdentifiableAbstractRunner.GetDeserializer();
+        var deserializer = RunnerBase.GetDeserializer();
         var ruleSet = deserializer.Deserialize<RuleSet>(yaml);
 
         Assert.IsInstanceOf(typeof(ConsensusRule), ruleSet.ConsensusRules.Single());

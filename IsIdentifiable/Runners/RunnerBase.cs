@@ -25,7 +25,7 @@ namespace IsIdentifiable.Runners;
 /// Subclass to add support for new data sources.  Current sources include reading from
 /// CSV files, Dicom files and database tables.
 /// </summary>
-public abstract class IsIdentifiableAbstractRunner : IDisposable
+public abstract class RunnerBase : IDisposable
 {
     private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
@@ -169,7 +169,7 @@ public abstract class IsIdentifiableAbstractRunner : IDisposable
     /// <param name="fileSystem"></param>
     /// <param name="customReports">Any custom reports that should be added in addition to those specified in <paramref name="opts"/></param>
     /// <exception cref="Exception"></exception>
-    protected IsIdentifiableAbstractRunner(IsIdentifiableOptions opts, IFileSystem fileSystem, params IFailureReport[] customReports)
+    protected RunnerBase(IsIdentifiableOptions opts, IFileSystem fileSystem, params IFailureReport[] customReports)
     {
         FileSystem = fileSystem;
 

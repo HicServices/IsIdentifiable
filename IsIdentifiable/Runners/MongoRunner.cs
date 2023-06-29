@@ -20,7 +20,7 @@ namespace IsIdentifiable.Runners;
 /// <summary>
 /// Evaluates data in a mongodb collection
 /// </summary>
-public class MongoRunner : IsIdentifiableAbstractRunner
+public class MongoRunner : RunnerBase
 {
     private const string SEP = "#";
 

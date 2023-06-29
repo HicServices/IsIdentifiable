@@ -13,7 +13,7 @@ namespace IsIdentifiable.Runners;
 /// <summary>
 /// Runner for reading data from CSV files and evaluating it for identifiable content
 /// </summary>
-public class FileRunner : IsIdentifiableAbstractRunner
+public class FileRunner : RunnerBase
 {
     private readonly IsIdentifiableFileOptions _opts;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();

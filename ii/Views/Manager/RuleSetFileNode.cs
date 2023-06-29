@@ -34,7 +34,7 @@ internal class RuleSetFileNode
 
         var yaml = System.IO.File.ReadAllText(File.FullName);
 
-        var deserializer = IsIdentifiableAbstractRunner.GetDeserializer();
+        var deserializer = RunnerBase.GetDeserializer();
         return _ruleSet = deserializer.Deserialize<RuleSet>(yaml) ?? new RuleSet();
     }
 

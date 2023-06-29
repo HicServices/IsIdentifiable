@@ -383,7 +383,7 @@ BasicRules:
 
 
 
-    private class TestRunner : IsIdentifiableAbstractRunner
+    private class TestRunner : RunnerBase
     {
         public string FieldToTest { get; set; }
         public string ValueToTest { get; set; }

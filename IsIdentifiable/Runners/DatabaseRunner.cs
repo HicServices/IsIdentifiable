@@ -15,7 +15,7 @@ namespace IsIdentifiable.Runners;
 /// IsIdentifiable runner which pulls data from a relational database 
 /// table and evaluates it for identifiable information
 /// </summary>
-public class DatabaseRunner : IsIdentifiableAbstractRunner
+public class DatabaseRunner : RunnerBase
 {
     private readonly IsIdentifiableRelationalDatabaseOptions _opts;
     private readonly ILogger _logger = LogManager.GetCurrentClassLogger();

@@ -101,7 +101,7 @@ public class IsIdentifiablePipelineComponent : IDataFlowComponent<DataTable>, IC
     }
 }
 
-class CustomRunner : IsIdentifiableAbstractRunner
+class CustomRunner : RunnerBase
 {
     private readonly IsIdentifiableOptions options;
 
