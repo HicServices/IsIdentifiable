@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
+using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
 namespace IsIdentifiable.Redacting;
@@ -69,7 +70,15 @@ public abstract class OutBase
             {
                 //populated rules file already existed
                 var deserializer = new Deserializer();
-                Rules = deserializer.Deserialize<List<RegexRule>>(existingRules) ?? new List<RegexRule>();
+                try
+                {
+                    Rules = deserializer.Deserialize<List<RegexRule>>(existingRules) ?? new List<RegexRule>();
+                }
+                catch (YamlException e)
+                {
+                    Console.Error.WriteLine($"Error desieralizing {rulesFile}: {e}");
+                    throw;
+                }
             }
         }
     }
