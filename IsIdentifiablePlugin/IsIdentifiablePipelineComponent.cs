@@ -1,3 +1,4 @@
+using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
 using Rdmp.Core.Curation.Data;
 using Rdmp.Core.DataExport.DataExtraction.Commands;
@@ -7,6 +8,7 @@ using ReusableLibraryCode.Checks;
 using ReusableLibraryCode.Progress;
 using System;
 using System.Data;
+using System.IO;
 using System.IO.Abstractions;
 
 namespace IsIdentifiablePlugin;

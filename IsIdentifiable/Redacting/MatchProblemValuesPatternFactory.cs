@@ -1,4 +1,4 @@
-﻿using IsIdentifiable.Failures;
+using IsIdentifiable.Failures;
 using IsIdentifiable.Scanners;
 using System.Linq;
 using System.Text;
