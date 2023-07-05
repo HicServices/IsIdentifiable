@@ -1,4 +1,4 @@
-﻿
+
 using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
 

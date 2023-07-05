@@ -17,13 +17,13 @@ class AllRulesManagerView : View, ITreeBuilder<object>
 {
     private const string Analyser = "Analyser Rules";
     private const string Reviewer = "Reviewer Rules";
-    private readonly IsIdentifiableOptions? _analyserOpts;
+    private readonly ScannerBaseOptions? _analyserOpts;
     private readonly IsIdentifiableReviewerOptions _reviewerOpts;
     private readonly RuleDetailView _detailView;
     private readonly TreeView<object> _treeView;
     private readonly IFileSystem _fileSystem;
 
-    public AllRulesManagerView(IsIdentifiableOptions? analyserOpts, IsIdentifiableReviewerOptions reviewerOpts, IFileSystem fileSystem)
+    public AllRulesManagerView(ScannerBaseOptions? analyserOpts, IsIdentifiableReviewerOptions reviewerOpts, IFileSystem fileSystem)
     {
         _fileSystem = fileSystem;
 

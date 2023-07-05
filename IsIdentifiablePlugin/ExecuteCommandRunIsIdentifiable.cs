@@ -1,5 +1,5 @@
 using IsIdentifiable.Options;
-using IsIdentifiable.Runners;
+using IsIdentifiable.Scanners;
 using Rdmp.Core.CommandExecution;
 using Rdmp.Core.Curation.Data;
 using ReusableLibraryCode.DataAccess;
@@ -8,71 +8,66 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Threading;
 using System.Threading.Tasks;
-using YamlDotNet.Serialization;
 
 namespace IsIdentifiablePlugin;
 
-internal class ExecuteCommandRunIsIdentifiable : BasicCommandExecution
+public class ExecuteCommandRunIsIdentifiable : BasicCommandExecution
 {
     private readonly ICatalogue _catalogue;
-    private readonly FileInfo? _configYaml;
+    private FileInfo? _configYaml;
     private readonly ITableInfo? _table;
 
-    public ExecuteCommandRunIsIdentifiable(IBasicActivateItems activator, ICatalogue catalogue, FileInfo? configYaml) : base(activator)
+    public ExecuteCommandRunIsIdentifiable(
+        IBasicActivateItems activator,
+        ICatalogue catalogue,
+        FileInfo? configYaml
+    )
+        : base(activator)
     {
-        this._catalogue = catalogue;
-        this._configYaml = configYaml;
+        _catalogue = catalogue;
+        _configYaml = configYaml;
 
         var tables = catalogue.GetTableInfosIdeallyJustFromMainTables();
         if (tables.Length != 1)
-        {
             SetImpossible("Catalogue draws from multiple tables so cannot be evaluated");
-        }
         else
-        {
-            this._table = tables[0];
-        }
+            _table = tables[0];
     }
 
     public override void Execute()
     {
         base.Execute();
 
-        var file = _configYaml;
-
         if (_table == null)
-            throw new System.Exception("No table picked to run on");
+            throw new Exception("No table picked to run on");
 
-        file ??= BasicActivator.SelectFile("YAMLConfigFile", "YAML File", "*.yaml");
+        _configYaml ??= BasicActivator.SelectFile("YAMLConfigFile", "YAML File", "*.yaml");
 
         // user cancelled
-        if (file == null)
+        if (_configYaml == null)
             return;
 
-        var dbOpts = new IsIdentifiableRelationalDatabaseOptions();
-
-        var deserializer = new Deserializer();
-        var baseOptions = deserializer.Deserialize<GlobalOptions>(File.ReadAllText(file.FullName));
-
-        if (baseOptions?.IsIdentifiableOptions == null)
-            throw new Exception($"Yaml file did not contain IsIdentifiableOptions");
-
-        // use the settings in the users file
-        dbOpts.InheritValuesFrom(baseOptions.IsIdentifiableOptions);
+        var allOptions = IsIdentifiableOptions.Load(new FileSystem().FileInfo.New(_configYaml.FullName));
+        var relationalDatabaseScannerOptions = allOptions.RelationalDatabaseScannerOptions ??
+            throw new ArgumentException($"Yaml file did not contain a {typeof(RelationalDatabaseScannerOptions)} key", nameof(_configYaml));
 
         var server = _catalogue.GetDistinctLiveDatabaseServer(DataAccessContext.InternalDataProcessing, true);
+        relationalDatabaseScannerOptions.DatabaseTargets.Insert(
+            0,
+            new DatabaseTargetOptions
+            {
+                Name = "from-catalogue",
+                DatabaseConnectionString = server.Builder.ConnectionString,
+                DatabaseType = server.DatabaseType,
+            }
+        );
 
-        // but the connection strings from the Catalogue
-        dbOpts.DatabaseConnectionString = server.Builder.ConnectionString;
-        dbOpts.DatabaseType = server.DatabaseType;
-        dbOpts.TableName = _table.GetRuntimeName();
-
-        var runner = new DatabaseRunner(dbOpts, new FileSystem());
+        using var runner = new RelationalDatabaseScanner(relationalDatabaseScannerOptions, new FileSystem());
         using var cts = new CancellationTokenSource();
 
         BasicActivator.Wait("Evaluating Table", Task.Run(() =>
         {
-            runner.Run();
+            runner.Scan(_table.GetRuntimeName());
             runner.Dispose();
         }), cts);
     }

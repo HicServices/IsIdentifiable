@@ -74,7 +74,7 @@ G - creates a regex pattern that matches only the failing part(s)
 
     private readonly View viewMain;
 
-    public MainWindow(IsIdentifiableOptions analyserOpts, IsIdentifiableReviewerOptions opts, IgnoreRuleGenerator ignorer, RowUpdater updater, IFileSystem fileSystem)
+    public MainWindow(ScannerBaseOptions? analyserOpts, IsIdentifiableReviewerOptions opts, IgnoreRuleGenerator ignorer, RowUpdater updater, IFileSystem fileSystem)
     {
         _fileSystem = fileSystem;
 
@@ -407,7 +407,7 @@ G - creates a regex pattern that matches only the failing part(s)
         try
         {
             // TODO(rkm 2021-04-09) Server always passed as null here, but Update seems to require it?
-            Updater.Update(null, _valuePane.CurrentFailure, null /*create one yourself*/);
+            Updater.Update(null!, _valuePane.CurrentFailure, null! /*create one yourself*/);
 
             History.Push(new MainWindowHistory(CurrentReport.CurrentIndex, Updater));
         }

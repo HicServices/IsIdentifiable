@@ -1,4 +1,4 @@
-﻿using Equ;
+using Equ;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -26,9 +26,9 @@ public class Failure : MemberwiseEquatable<Failure>
 
     /// <summary>
     /// How to narrow down within the <see cref="Resource"/> the exact location of the <see cref="ProblemValue"/>.  Leave blank for
-    /// files.  List the primary key for tables (e.g. SeriesInstanceUID / SOPInstanceUID).  Use semi colons for composite keys
+    /// files. List the primary key for tables (e.g. SeriesInstanceUID / SOPInstanceUID).  Use semi colons for composite keys
     /// </summary>
-    public string ResourcePrimaryKey { get; set; }
+    public string? ResourcePrimaryKey { get; set; }
 
     /// <summary>
     /// The name of the column or DicomTag (including subtags if in a sequence) in which identifiable data was found

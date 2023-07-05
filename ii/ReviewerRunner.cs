@@ -7,6 +7,7 @@ using IsIdentifiable.Options;
 using IsIdentifiable.Redacting;
 using NLog;
 using System;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using Terminal.Gui;
@@ -16,11 +17,11 @@ namespace ii;
 
 public class ReviewerRunner
 {
-    private readonly IsIdentifiableOptions? _analyserOpts;
+    private readonly ScannerBaseOptions? _analyserOpts;
     private readonly IsIdentifiableReviewerOptions _reviewerOptions;
     private readonly IFileSystem _fileSystem;
 
-    public ReviewerRunner(IsIdentifiableOptions? analyserOpts, IsIdentifiableReviewerOptions reviewerOptions, IFileSystem fileSystem)
+    public ReviewerRunner(ScannerBaseOptions? analyserOpts, IsIdentifiableReviewerOptions reviewerOptions, IFileSystem fileSystem)
     {
         _analyserOpts = analyserOpts;
         _reviewerOptions = reviewerOptions;
@@ -35,7 +36,10 @@ public class ReviewerRunner
     {
         var logger = LogManager.GetCurrentClassLogger();
 
-        var returnCode = IsIdentifiableOptions.LoadTargets(_reviewerOptions, logger, _fileSystem, out var targets);
+        // TODO(rkm 2023-07-05) Refactor this
+        //var returnCode = IsIdentifiableOptions.LoadTargets(_reviewerOptions, logger, _fileSystem, out var targets);
+        var returnCode = 123;
+        List<DatabaseTargetOptions> targets = new();
 
         if (returnCode != 0)
             return returnCode;
@@ -54,9 +58,12 @@ public class ReviewerRunner
             try
             {
                 foreach (var t in targets)
-                    Console.WriteLine(t.Discover().Exists()
-                        ? $"Successfully connected to {t.Name}"
-                        : $"Failed to connect to {t.Name}");
+                {
+                    // TODO(rkm 2023-07-05) Refactor this
+                    //Console.WriteLine(t.Discover().Exists()
+                    //    ? $"Successfully connected to {t.Name}"
+                    //    : $"Failed to connect to {t.Name}");
+                }
             }
             catch (Exception e)
             {
@@ -122,7 +129,7 @@ public class ReviewerRunner
 
                 var top = Application.Top;
 
-                using var mainWindow = new MainWindow(_analyserOpts ?? new IsIdentifiableOptions(), _reviewerOptions, ignorer, updater, _fileSystem);
+                using var mainWindow = new MainWindow(_analyserOpts, _reviewerOptions, ignorer, updater, _fileSystem);
 
 
                 // Creates the top-level window to show

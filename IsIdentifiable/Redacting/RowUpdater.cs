@@ -1,4 +1,4 @@
-﻿using FAnsi.Discovery;
+using FAnsi.Discovery;
 using IsIdentifiable.Failures;
 using IsIdentifiable.Redacting.UpdateStrategies;
 using IsIdentifiable.Rules;
@@ -112,7 +112,7 @@ public class RowUpdater : OutBase
     /// <param name="failure"></param>
     /// <param name="rule">The first rule that covered the <paramref name="failure"/></param>
     /// <returns>True if <paramref name="failure"/> is novel and not seen before</returns>
-    public bool OnLoad(DiscoveredServer server, Failure failure, out RegexRule rule)
+    public bool OnLoad(DiscoveredServer? server, Failure failure, out RegexRule rule)
     {
         // if we are not updating the server just tell them if it is novel or not
         if (server == null)

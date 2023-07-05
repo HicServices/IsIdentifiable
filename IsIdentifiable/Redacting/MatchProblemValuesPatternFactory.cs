@@ -1,5 +1,5 @@
 ﻿using IsIdentifiable.Failures;
-using IsIdentifiable.Runners;
+using IsIdentifiable.Scanners;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -20,7 +20,7 @@ public class MatchProblemValuesPatternFactory : IRulePatternFactory
     public string GetPattern(object sender, Failure failure)
     {
         // source is image pixel data
-        if (failure.ProblemField?.StartsWith(DicomFileRunner.PixelData) ?? false)
+        if (failure.ProblemField?.StartsWith(DicomFileScanner.PixelData) ?? false)
             return $"^{Regex.Escape(failure.ProblemValue)}$";
 
 
@@ -39,7 +39,7 @@ public class MatchProblemValuesPatternFactory : IRulePatternFactory
         }
 
         // source is image pixel data
-        if (failure.ProblemField?.StartsWith(DicomFileRunner.PixelData) ?? false)
+        if (failure.ProblemField?.StartsWith(DicomFileScanner.PixelData) ?? false)
             return sb.ToString();
 
         // If there is a failure part that ends at the end of the input string then the pattern should have a terminator

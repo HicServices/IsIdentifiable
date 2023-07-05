@@ -2,7 +2,6 @@ using DicomTypeTranslation;
 using FellowOakDicom;
 using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
-using IsIdentifiable.Reporting;
 using IsIdentifiable.Reporting.Reports;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -15,24 +14,18 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace IsIdentifiable.Runners;
+namespace IsIdentifiable.Scanners;
 
 /// <summary>
 /// Evaluates data in a mongodb collection
 /// </summary>
-public class MongoRunner : RunnerBase
+public class MongoDBScanner : ResourceScannerBase
 {
     private const string SEP = "#";
 
-    private readonly ILogger _logger;
-
-    private readonly IsIdentifiableMongoOptions _opts;
-
-    private readonly TreeFailureReport _treeReport;
-
+    private readonly TreeFailureReport? _treeFailureReport;
     private readonly IMongoCollection<BsonDocument> _collection;
-
-    private readonly string _queryString;
+    private readonly bool _documentsAreDicom;
 
     private readonly FindOptions<BsonDocument> _findOptionsBase = new()
     {
@@ -44,81 +37,80 @@ public class MongoRunner : RunnerBase
         MaxDegreeOfParallelism = Environment.ProcessorCount > 1 ? Environment.ProcessorCount / 2 : 1
     };
 
-
-    private Task _runnerTask;
+    private Task? _runnerTask;
     private readonly CancellationTokenSource _tokenSource = new();
     private bool _stopping;
 
-    // TODO(rkm 2023-06-26) This really shouldn't be unused
-#pragma warning disable IDE0052 // Remove unread private members
-    private readonly MongoDbFailureFactory _factory;
-#pragma warning restore IDE0052 // Remove unread private members
-
     /// <summary>
-    /// Creates a new instance and prepares to fetch data from the MongoDb instance
-    /// specified in <paramref name="opts"/>
+    /// 
     /// </summary>
-    /// <param name="opts"></param>
+    /// <param name="options"></param>
     /// <param name="fileSystem"></param>
-    public MongoRunner(IsIdentifiableMongoOptions opts, IFileSystem fileSystem)
-        : base(opts, fileSystem)
+    /// <exception cref="MongoException"></exception>
+    public MongoDBScanner(
+        MongoDBScannerOptions options,
+        TreeFailureReport? treeFailureReport,
+        IFileSystem fileSystem
+    )
+        : base(options, fileSystem)
     {
-        _logger = LogManager.GetLogger(GetType().Name);
-        _opts = opts;
+        _treeFailureReport = treeFailureReport;
 
-        LogProgressNoun = "documents";
+        _documentsAreDicom = options.DocumentsAreDicom;
+       
+        var client = new MongoClient(options.MongoDBConnectionString);
 
-        if (opts.TreeReport)
+        if (!client.ListDatabaseNames().ToList().Contains(options.DatabaseName))
+            throw new MongoException($"Database '{options.DatabaseName}' does not exist on the server");
+
+        var database = client.GetDatabase(options.DatabaseName);
+
+        var listOptions = new ListCollectionNamesOptions
         {
-            _treeReport = new TreeFailureReport(opts.GetTargetName(FileSystem), FileSystem);
-            Reports.Add(_treeReport);
-        }
+            Filter = new BsonDocument("name", options.CollectionName),
+        };
 
-        var mongoClient = new MongoClient(opts.MongoConnectionString);
+        if (!database.ListCollectionNames(listOptions).Any())
+            throw new MongoException($"Collection '{options.CollectionName}' does not exist in database {database.DatabaseNamespace}");
 
-        var db = TryGetDatabase(mongoClient, _opts.DatabaseName);
-        _collection = TryGetCollection(db, _opts.CollectionName);
-
-        if (!string.IsNullOrWhiteSpace(_opts.QueryFile))
-            _queryString = FileSystem.File.ReadAllText(_opts.QueryFile);
+        _collection = database.GetCollection<BsonDocument>(options.CollectionName);
 
         // if specified, batch size must be g.t. 1:
         // https://docs.mongodb.com/manual/reference/method/cursor.batchSize/
-        if (_opts.MongoDbBatchSize > 1)
-            _findOptionsBase.BatchSize = _opts.MongoDbBatchSize;
+        if (options.MongoDbBatchSize > 1)
+            _findOptionsBase.BatchSize = options.MongoDbBatchSize;
 
-        _factory = new MongoDbFailureFactory();
-
-        if (_opts.UseMaxThreads)
+        if (options.UseMaxThreads)
             _parallelOptions.MaxDegreeOfParallelism = -1;
+
+        // Disable fo-dicom's DICOM validation globally from here
+        new DicomSetupBuilder().SkipValidation();
     }
 
     /// <summary>
     /// Connects to the MongoDb and evaluates all data in the collection/filter specified
     /// </summary>
     /// <returns></returns>
-    public override int Run()
+    public void Scan(string? queryString)
     {
-        _runnerTask = RunQuery();
+        _runnerTask = RunQuery(queryString);
         _runnerTask.Wait();
-
-        return 0;
     }
 
-    private async Task RunQuery()
+    private async Task RunQuery(string? queryString)
     {
-        _logger.Info($"Using MaxDegreeOfParallelism: {_parallelOptions.MaxDegreeOfParallelism}");
+        Logger.Info($"Using MaxDegreeOfParallelism: {_parallelOptions.MaxDegreeOfParallelism}");
 
         var totalProcessed = 0;
         var failedToRebuildCount = 0;
 
-        _logger.Debug("Performing query");
+        Logger.Debug("Performing query");
         var start = DateTime.Now;
 
-        using (var cursor = await MongoQueryParser.GetCursor(_collection, _findOptionsBase, _queryString))
+        using (var cursor = await MongoQueryParser.GetCursor(_collection, _findOptionsBase, queryString))
         {
-            _logger.Info("Query completed in {0:g}. Starting checks with cursor", (DateTime.Now - start));
-            _logger.Info(
+            Logger.Info("Query completed in {0:g}. Starting checks with cursor", DateTime.Now - start);
+            Logger.Info(
                 $"Batch size is: {(_findOptionsBase.BatchSize.HasValue ? _findOptionsBase.BatchSize.ToString() : "unspecified")}");
 
             start = DateTime.Now;
@@ -126,7 +118,7 @@ public class MongoRunner : RunnerBase
             //Note: Can only check for the cancellation request every time we start to process a new batch
             while (await cursor.MoveNextAsync() && !_tokenSource.IsCancellationRequested)
             {
-                _logger.Debug("Received new batch");
+                Logger.Debug("Received new batch");
 
                 var batch = cursor.Current;
                 var batchCount = 0;
@@ -139,34 +131,30 @@ public class MongoRunner : RunnerBase
                 {
                     var documentId = document["_id"].AsObjectId;
 
-                    if (_opts.IsDicomFiles)
-                    {
+                    if (_documentsAreDicom)
                         ProcessDocumentAsDicom(document, documentId, oLogLock, oListLock, ref failedToRebuildCount, ref batchCount, batchFailures);
-                    }
                     else
-                    {
                         ProcessDocumentAsUnstructured(document, documentId, oListLock, ref batchCount, batchFailures);
-                    }
                 });
 
-                batchFailures.ForEach(AddToReports);
+                batchFailures.ForEach(NotifyNewFailure);
 
                 totalProcessed += batchCount;
-                _logger.Debug($"Processed {totalProcessed} documents total");
+                Logger.Debug($"Processed {totalProcessed} documents total");
 
-                DoneRows(batchCount);
+                NotifyDoneRows(batchCount);
             }
         }
 
         var queryTime = DateTime.Now - start;
-        _logger.Info($"Processing finished or cancelled, total time elapsed: {queryTime:g}");
+        Logger.Info($"Processing finished or cancelled, total time elapsed: {queryTime:g}");
 
-        _logger.Info("{0} documents were processed in total", totalProcessed);
+        Logger.Info("{0} documents were processed in total", totalProcessed);
 
         if (failedToRebuildCount > 0)
-            _logger.Warn("{0} documents could not be reconstructed into DicomDatasets", failedToRebuildCount);
+            Logger.Warn("{0} documents could not be reconstructed into DicomDatasets", failedToRebuildCount);
 
-        _logger.Info("Writing out reports...");
+        Logger.Info("Writing out reports...");
         CloseReports();
     }
 
@@ -183,8 +171,7 @@ public class MongoRunner : RunnerBase
         {
             // Log any documents we couldn't process due to errors in rebuilding the dataset
             lock (oLogLock)
-                _logger.Log(LogLevel.Error, e,
-                    "Could not reconstruct dataset from document " + documentId);
+                Logger.Error(e, "Could not reconstruct dataset from document " + documentId);
 
             Interlocked.Increment(ref failedToRebuildCount);
 
@@ -218,9 +205,8 @@ public class MongoRunner : RunnerBase
         var failures = new List<Failure>();
 
         foreach (var element in document)
-        {
             failures.AddRange(ProcessBsonValue(documentId, tagTree, element.Name, element.Value, false));
-        }
+
         return failures;
     }
 
@@ -229,9 +215,7 @@ public class MongoRunner : RunnerBase
         var failures = new List<Failure>();
 
         if (!isArrayElement)
-        {
             tagTree += name;
-        }
 
         switch (value.BsonType)
         {
@@ -254,17 +238,14 @@ public class MongoRunner : RunnerBase
                 foreach (var entry in (BsonArray)value)
                 {
                     // process each array element
-                    failures.AddRange(
-                        ProcessBsonValue(documentId, $"{tagTree}[{i}]", name, entry, true)
-                        );
+                    failures.AddRange(ProcessBsonValue(documentId, $"{tagTree}[{i}]", name, entry, true));
                     i++;
                 }
                 break;
             default:
-
-                failures.AddRange(
-                    ValidateBsonValue(documentId, tagTree, name, value)
-                    );
+                var f = ValidateBsonValue(documentId, tagTree, name, value);
+                if (f != null)
+                    failures.Add(f);
                 break;
         }
 
@@ -276,14 +257,17 @@ public class MongoRunner : RunnerBase
     /// </summary>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    private IEnumerable<Failure> ValidateBsonValue(ObjectId documentId, string fullTagPath, string name, BsonValue value)
+    private Failure? ValidateBsonValue(ObjectId documentId, string fullTagPath, string name, BsonValue value)
     {
         var valueAsString = value.ToString();
+        if (valueAsString == null)
+            return null;
 
-        var parts = Validate(name, valueAsString).ToList();
+        var failureParts = Validate(name, valueAsString);
+        if (!failureParts.Any())
+            return null;
 
-        if (parts.Any())
-            yield return MongoDbFailureFactory.Create(documentId, fullTagPath, valueAsString, parts);
+        return FailureFrom(documentId, fullTagPath, valueAsString, failureParts);
     }
 
     /// <summary>
@@ -300,7 +284,7 @@ public class MongoRunner : RunnerBase
 
         _stopping = true;
 
-        _logger.Info("Cancelling the running query");
+        Logger.Info("Cancelling the running query");
         _tokenSource.Cancel();
     }
 
@@ -357,46 +341,25 @@ public class MongoRunner : RunnerBase
             failures.AddRange(ds.GetValues<string>(element.Tag)
                 .Select(s => new { s, parts = Validate(kw, s).ToList() })
                 .Where(t => t.parts.Any())
-                .Select(t => MongoDbFailureFactory.Create(documentId, fullTagPath, t.s, t.parts)));
+                .Select(t => FailureFrom(documentId, fullTagPath, t.s, t.parts)));
         }
 
-        AddNodeCounts(nodeCounts);
+        _treeFailureReport?.AddNodeCounts(nodeCounts);
 
         return failures;
     }
 
-    private void AddNodeCounts(IDictionary<string, int> nodeCounts)
+    protected override void DisposeImpl()
     {
-        _treeReport?.AddNodeCounts(nodeCounts);
-    }
-
-    private static IMongoDatabase TryGetDatabase(MongoClient client, string dbName)
-    {
-        if (!client.ListDatabaseNames().ToList().Contains(dbName))
-            throw new MongoException($"Database '{dbName}' does not exist on the server");
-
-        return client.GetDatabase(dbName);
-    }
-
-    private static IMongoCollection<BsonDocument> TryGetCollection(IMongoDatabase database, string collectionName)
-    {
-        var listOptions = new ListCollectionNamesOptions
-        {
-            Filter = new BsonDocument("name", collectionName)
-        };
-
-        if (!database.ListCollectionNames(listOptions).Any())
-            throw new MongoException(
-                $"Collection '{collectionName}' does not exist in database {database.DatabaseNamespace}");
-
-        return database.GetCollection<BsonDocument>(collectionName);
+        // TODO(rkm 2023-07-01)
+        throw new NotImplementedException();
     }
 
     private class MongoQueryParser
     {
         private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
-        public static async Task<IAsyncCursor<BsonDocument>> GetCursor(IMongoCollection<BsonDocument> coll, FindOptions<BsonDocument> findOptions, string jsonQuery)
+        public static async Task<IAsyncCursor<BsonDocument>> GetCursor(IMongoCollection<BsonDocument> coll, FindOptions<BsonDocument> findOptions, string? jsonQuery)
         {
             if (string.IsNullOrWhiteSpace(jsonQuery))
             {
@@ -432,11 +395,10 @@ public class MongoRunner : RunnerBase
             if (TryParseIntProperty(docQuery, "skip", out var skip))
                 findOptions.Skip = skip;
 
-
             return await coll.FindAsync(find, findOptions);
         }
 
-        private static bool TryParseDocumentProperty(BsonDocument docQuery, string propertyName, out BsonDocument propertyDocument)
+        private static bool TryParseDocumentProperty(BsonDocument docQuery, string propertyName, out BsonDocument? propertyDocument)
         {
             if (docQuery.TryGetValue(propertyName, out var value))
                 try
@@ -454,7 +416,6 @@ public class MongoRunner : RunnerBase
 
             _logger.Info($"No document found for property {propertyName}");
             propertyDocument = null;
-
             return false;
         }
 
@@ -485,4 +446,26 @@ public class MongoRunner : RunnerBase
             return false;
         }
     }
+
+    private static Failure FailureFrom(
+        ObjectId documentId,
+        string problemTag,
+        string problemValue,
+        IEnumerable<FailurePart> parts
+    )
+    {
+        return new Failure(parts)
+        {
+            // No need to set this since the report will be named MongoDB-<database>.<collection>
+            Resource = "",
+
+            // Guaranteed to be unique across a collection
+            ResourcePrimaryKey = documentId.ToString(),
+
+            ProblemField = problemTag,
+            ProblemValue = problemValue
+        };
+    }
+
+    protected override string LogProgressNoun() => "documents";
 }

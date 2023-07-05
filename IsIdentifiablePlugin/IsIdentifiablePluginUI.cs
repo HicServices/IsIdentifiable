@@ -8,9 +8,9 @@ namespace IsIdentifiablePlugin;
 
 class IsIdentifiablePluginUI : PluginUserInterface
 {
-    public IsIdentifiablePluginUI(IBasicActivateItems itemActivator) : base(itemActivator)
-    {
-    }
+    public IsIdentifiablePluginUI(IBasicActivateItems itemActivator)
+        : base(itemActivator)
+    { }
 
     public override IEnumerable<IAtomicCommand> GetAdditionalRightClickMenuItems(object o)
     {

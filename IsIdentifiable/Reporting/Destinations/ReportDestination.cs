@@ -1,6 +1,4 @@
-using IsIdentifiable.Options;
 using System.Data;
-using System.IO.Abstractions;
 using System.Text.RegularExpressions;
 
 namespace IsIdentifiable.Reporting.Destinations;
@@ -15,12 +13,7 @@ public abstract class ReportDestination : IReportDestination
     /// <summary>
     /// The options used to run IsIdentifiable
     /// </summary>
-    protected IsIdentifiableOptions Options { get; }
-
-    /// <summary>
-    /// FileSystem to use for I/O
-    /// </summary>
-    protected readonly IFileSystem FileSystem;
+    protected ReportDestinationOptions Options { get; }
 
     private readonly Regex _multiSpaceRegex = new(" {2,}");
 
@@ -28,11 +21,9 @@ public abstract class ReportDestination : IReportDestination
     /// Initializes the report destination and sets <see cref="Options"/>
     /// </summary>
     /// <param name="options"></param>
-    /// <param name="fileSystem"></param>
-    protected ReportDestination(IsIdentifiableOptions options, IFileSystem fileSystem)
+    protected ReportDestination(ReportDestinationOptions options)
     {
         Options = options;
-        FileSystem = fileSystem;
     }
 
     /// <summary>
@@ -54,14 +45,14 @@ public abstract class ReportDestination : IReportDestination
     public virtual void Dispose() { }
 
     /// <summary>
-    /// Returns <paramref name="o"/> with whitespace stripped (if it is a string and <see cref="IsIdentifiableOptions.DestinationNoWhitespace"/>
+    /// Returns <paramref name="o"/> with whitespace stripped (if it is a string and <see cref="ReportDestinationOptions.StripWhitespaceOnWrite"/>
     /// is set on command line options).
     /// </summary>
     /// <param name="o"></param>
     /// <returns></returns>
     protected object StripWhitespace(object o)
     {
-        if (o is string s && Options.DestinationNoWhitespace)
+        if (o is string s && Options.StripWhitespaceOnWrite)
             return _multiSpaceRegex.Replace(s.Replace("\t", "").Replace("\r", "").Replace("\n", ""), " ");
 
         return o;

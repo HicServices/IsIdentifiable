@@ -23,7 +23,7 @@ public class ToMemoryFailureReport : IFailureReport
     /// Overridden to do nothing. This report does not support routing to 
     /// destinations
     /// </summary>
-    public void AddDestinations(IsIdentifiableOptions options)
+    public void AddDestinations(IsIdentifiableOptions _)
     {
 
     }

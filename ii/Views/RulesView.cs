@@ -283,6 +283,7 @@ class RulesView : View
         Updater.Add(ofn.Failure);
         Remove(ofn);
     }
+
     private void Ignore(OutstandingFailureNode ofn, bool isBulkIgnore)
     {
         if (Ignorer == null)
@@ -290,7 +291,7 @@ class RulesView : View
 
         if (isBulkIgnore)
         {
-            Ignorer.Add(ofn.Failure, _bulkIgnorePatternFactory);
+            Ignorer.Add(ofn.Failure, _bulkIgnorePatternFactory!);
         }
         else
         {

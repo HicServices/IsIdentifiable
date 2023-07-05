@@ -1,6 +1,4 @@
-using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
-using IsIdentifiable.Runners;
 using Rdmp.Core.Curation.Data;
 using Rdmp.Core.DataExport.DataExtraction.Commands;
 using Rdmp.Core.DataFlowPipeline;
@@ -9,10 +7,7 @@ using ReusableLibraryCode.Checks;
 using ReusableLibraryCode.Progress;
 using System;
 using System.Data;
-using System.IO;
 using System.IO.Abstractions;
-using System.Linq;
-using YamlDotNet.Serialization;
 
 namespace IsIdentifiablePlugin;
 
@@ -22,137 +17,54 @@ namespace IsIdentifiablePlugin;
 /// </summary>
 public class IsIdentifiablePipelineComponent : IDataFlowComponent<DataTable>, ICheckable, IPipelineOptionalRequirement<ExtractCommand>
 {
-    private CustomRunner? _runner;
-    private string? _targetName;
 
-    // RDMP will handle this, dont complain that it isn't marked nullable
-#pragma warning disable CS8618
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     [DemandsInitialization("YAML file with the IsIdentifiable rules (regex, NLP, report formats etc)", Mandatory = true)]
     public string YamlConfigFile { get; set; }
 #pragma warning restore CS8618
-    public void Abort(IDataLoadEventListener listener)
-    {
 
-    }
+    private static readonly IFileSystem _fileSystem = new FileSystem();
+    private RDMPPipelineScanner? _scanner;
+    private RDMPPipelineScannerOptions? _options;
+
+    public void Abort(IDataLoadEventListener listener) { }
 
     public void Check(ICheckNotifier notifier)
     {
-        LoadYamlConfigFile();
+        LoadConfigFile();
         notifier.OnCheckPerformed(new CheckEventArgs($"Read YamlConfigFile successfully", CheckResult.Success));
     }
 
-    public void Dispose(IDataLoadEventListener listener, Exception pipelineFailureExceptionIfAny)
-    {
-        _runner?.Dispose();
-    }
+    public void Dispose(IDataLoadEventListener listener, Exception pipelineFailureExceptionIfAny) => _scanner?.Dispose();
 
-    public void PreInitialize(ExtractCommand value, IDataLoadEventListener listener)
-    {
-        // if we are being used in the context of data extraction then name the
-        // report files by the name of the dataset/global being extracted
-        _targetName = value.ToString();
-    }
+    public void PreInitialize(ExtractCommand value, IDataLoadEventListener listener) { }
 
     public DataTable ProcessPipelineData(DataTable toProcess, IDataLoadEventListener listener, GracefulCancellationToken cancellationToken)
     {
-        if (toProcess.Rows.Count > 0)
-        {
-            CreateRunner(_targetName ?? toProcess.TableName);
+        if (toProcess.Rows.Count <= 0)
+            return toProcess;
 
-            if (_runner == null)
-                throw new Exception("CreateRunner was called but no _runner was created");
-
-            _runner.Run(toProcess);
-        }
+        _scanner ??= GetScanner();
+        _scanner.Scan(toProcess);
 
         return toProcess;
     }
 
-    private void CreateRunner(string targetName)
+    private RDMPPipelineScanner GetScanner()
     {
-        if (_runner != null)
-            return;
+        if (_options == null)
+            LoadConfigFile();
 
-        var opts = LoadYamlConfigFile()
-            ?? throw new Exception("No options were loaded from yaml ");
-
-        if (opts.IsIdentifiableOptions == null)
-        {
-            throw new Exception($"Yaml file did not contain IsIdentifiableOptions");
-        }
-
-        if (!string.IsNullOrWhiteSpace(targetName))
-            opts.IsIdentifiableOptions.TargetName = targetName;
-
-        _runner = new CustomRunner(opts.IsIdentifiableOptions, new FileSystem());
-
+        return new RDMPPipelineScanner(_options!, _fileSystem);
     }
 
-    private GlobalOptions LoadYamlConfigFile()
+    private void LoadConfigFile()
     {
+        var fi = _fileSystem.FileInfo.New(YamlConfigFile);
+        var allOptions = IsIdentifiableOptions.Load<IsIdentifiableRDMPOptions>(fi);
 
-        var deserializer = new Deserializer();
-        var opts = deserializer.Deserialize<GlobalOptions>(File.ReadAllText(YamlConfigFile));
-
-        if (opts == null || opts.IsIdentifiableOptions == null)
-            throw new Exception($"Yaml file {YamlConfigFile} did not contain IsIdentifiableOptions");
-
-        return opts;
+        _options = allOptions.RDMPPipelineScannerOptions ??
+            throw new ArgumentException($"Yaml file did not contain a {typeof(RDMPPipelineScannerOptions)} key", nameof(YamlConfigFile));
     }
 }
 
-class CustomRunner : RunnerBase
-{
-    private readonly IsIdentifiableOptions options;
-
-    public CustomRunner(IsIdentifiableOptions options, IFileSystem fileSystem)
-        : base(options, fileSystem)
-    {
-        this.options = options;
-    }
-    public void Run(DataTable dt)
-    {
-        foreach (DataRow row in dt.Rows)
-        {
-            foreach (DataColumn col in dt.Columns)
-            {
-                // validate some example data we might have fetched
-                var val = row[col];
-
-                // null values cannot contain PII
-                if (val == null || val == DBNull.Value)
-                    continue;
-
-                var badParts = Validate(col.ColumnName, val.ToString()).ToArray();
-
-                // Pass all parts as a Failure to the destination reports
-                if (badParts.Any())
-                {
-                    var f = new Failure(badParts)
-                    {
-                        ProblemField = col.ColumnName,
-                        ProblemValue = val.ToString(),
-                        Resource = options.GetTargetName(FileSystem)
-                    };
-
-                    AddToReports(f);
-                }
-
-            }
-
-            // Record progress
-            DoneRows(1);
-        }
-    }
-    public override void Dispose()
-    {
-        // Once all data is finished being fetched, close the destination reports
-        CloseReports();
-
-        base.Dispose();
-    }
-    public override int Run()
-    {
-        throw new NotSupportedException();
-    }
-}

@@ -1,4 +1,4 @@
-﻿using IsIdentifiable.Failures;
+using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
 using IsIdentifiable.Reporting.Destinations;
 using System;
@@ -48,20 +48,22 @@ public abstract class FailureReport : IFailureReport
     /// <param name="opts"></param>
     public virtual void AddDestinations(IsIdentifiableOptions opts)
     {
-        IReportDestination destination;
+        // TODO(rkm 2023-07-05) Refactor this
 
-        // Default is to write out CSV results
-        if (!string.IsNullOrWhiteSpace(opts.DestinationCsvFolder))
-            destination = new CsvDestination(opts, ReportName, FileSystem, true);
-        else if (!string.IsNullOrWhiteSpace(opts.DestinationConnectionString))
-            destination = new DatabaseDestination(opts, ReportName, FileSystem);
-        else
-        {
-            opts.DestinationCsvFolder = Environment.CurrentDirectory;
-            destination = new CsvDestination(opts, ReportName, FileSystem);
-        }
+        //IReportDestination destination;
 
-        Destinations.Add(destination);
+        //// Default is to write out CSV results
+        //if (!string.IsNullOrWhiteSpace(opts.DestinationCsvFolder))
+        //    destination = new CsvDestination(opts, ReportName, FileSystem, true);
+        //else if (!string.IsNullOrWhiteSpace(opts.DestinationConnectionString))
+        //    destination = new DatabaseDestination(opts, ReportName, FileSystem);
+        //else
+        //{
+        //    opts.DestinationCsvFolder = Environment.CurrentDirectory;
+        //    destination = new CsvDestination(opts, ReportName, FileSystem);
+        //}
+
+        //Destinations.Add(destination);
     }
 
     /// <summary>

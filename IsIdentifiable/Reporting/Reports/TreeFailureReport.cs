@@ -10,7 +10,7 @@ namespace IsIdentifiable.Reporting.Reports;
 /// <summary>
 /// Failure report for items from tree-like data such as MongoDB documents.
 /// </summary>
-internal class TreeFailureReport : FailureReport
+public class TreeFailureReport : FailureReport
 {
     private const int TOTAL_SEEN_IDX = 0;
     private const int TOTAL_FAILED_IDX = 1;

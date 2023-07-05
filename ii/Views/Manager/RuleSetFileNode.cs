@@ -1,5 +1,5 @@
-﻿using IsIdentifiable.Rules;
-using IsIdentifiable.Runners;
+using IsIdentifiable.Rules;
+using System;
 using System.IO.Abstractions;
 using YamlDotNet.Serialization;
 
@@ -28,22 +28,17 @@ internal class RuleSetFileNode
     public RuleSet GetRuleSet()
     {
         if (_ruleSet != null)
-        {
             return _ruleSet;
-        }
 
         var yaml = System.IO.File.ReadAllText(File.FullName);
-
-        var deserializer = RunnerBase.GetDeserializer();
+        var deserializer = RuleHelpers.GetRuleDeserializer();
         return _ruleSet = deserializer.Deserialize<RuleSet>(yaml) ?? new RuleSet();
     }
 
     public void Save(IFileInfo? toFile = null)
     {
         if (_ruleSet == null)
-        {
-            throw new System.Exception("Cannot save before children have been created, expected GetRuleSet() to have been called before now");
-        }
+            throw new Exception("Cannot save before children have been created, expected GetRuleSet() to have been called before now");
 
         toFile ??= File;
 

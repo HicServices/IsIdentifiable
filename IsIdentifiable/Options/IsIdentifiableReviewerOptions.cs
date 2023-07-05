@@ -5,11 +5,9 @@ using System;
 
 namespace IsIdentifiable.Options;
 
-/// <summary>
-/// CLI options for the reviewer
-/// </summary>
+[Obsolete("TODO(rkm 2023-07-05) Move to ii project")]
 [Verb("review", HelpText = "Review or redact the StoreReport output of an IsIdentifiable run")]
-public class IsIdentifiableReviewerOptions : ITargetsFileOptions
+public class IsIdentifiableReviewerOptions
 {
     /// <summary>
     /// Default value for <see cref="TargetsFile"/>

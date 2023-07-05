@@ -1,6 +1,6 @@
 using IsIdentifiable.Failures;
 using IsIdentifiable.Rules;
-using IsIdentifiable.Runners;
+using IsIdentifiable.Scanners;
 using System;
 using System.Linq;
 using System.Text;
@@ -31,7 +31,7 @@ public class SymbolsRulesFactory : IRulePatternFactory
             throw new ArgumentException("Failure had no Parts");
 
         // source is image pixel data
-        if (failure.ProblemField?.StartsWith(DicomFileRunner.PixelData) ?? false)
+        if (failure.ProblemField?.StartsWith(DicomFileScanner.PixelData) ?? false)
             return $"^{Regex.Escape(failure.ProblemValue)}$";
 
         var sb = new StringBuilder();

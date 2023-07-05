@@ -1,8 +1,10 @@
+using FAnsi.Discovery;
 using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
 using IsIdentifiable.Reporting.Destinations;
 using IsIdentifiable.Reporting.Reports;
 using IsIdentifiable.Rules;
+using IsIdentifiable.Util;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -19,7 +21,7 @@ namespace IsIdentifiable.Redacting;
 /// </summary>
 public class UnattendedReviewer
 {
-    private readonly Target _target;
+    private readonly DatabaseTargetOptions? _targetOptions;
     private readonly ReportReader _reportReader;
     private readonly RowUpdater _updater;
     private readonly IgnoreRuleGenerator _ignorer;
@@ -58,7 +60,7 @@ public class UnattendedReviewer
     /// <param name="ignorer">Rules base for detecting false positives</param>
     /// <param name="updater">Rules base for redacting true positives</param>
     /// <param name="fileSystem"></param>
-    public UnattendedReviewer(IsIdentifiableReviewerOptions opts, Target target, IgnoreRuleGenerator ignorer, RowUpdater updater, IFileSystem fileSystem)
+    public UnattendedReviewer(IsIdentifiableReviewerOptions opts, DatabaseTargetOptions? target, IgnoreRuleGenerator ignorer, RowUpdater updater, IFileSystem fileSystem)
     {
         _log = LogManager.GetCurrentClassLogger();
 
@@ -73,7 +75,7 @@ public class UnattendedReviewer
             throw new System.IO.FileNotFoundException($"Could not find Failures file '{fi.FullName}'");
 
         if (!opts.OnlyRules)
-            _target = target ?? throw new Exception("A single Target must be supplied for database updates");
+            _targetOptions = target ?? throw new Exception("A single Target must be supplied for database updates");
 
         _reportReader = new ReportReader(fi);
 
@@ -92,8 +94,10 @@ public class UnattendedReviewer
     /// <returns></returns>
     public int Run()
     {
-        //In RulesOnly mode this will be null
-        var server = _target?.Discover();
+        DiscoveredServer? server = null;
+        if (_targetOptions != null)
+            server = DatabaseTargetHelpers.GetDiscoveredServer(_targetOptions);
+
         var errors = new List<Exception>();
 
         var storeReport = new FailureStoreReport(_outputFile.Name, 100, _fileSystem);
@@ -101,7 +105,7 @@ public class UnattendedReviewer
         var sw = new Stopwatch();
         sw.Start();
 
-        using (var storeReportDestination = new CsvDestination(new IsIdentifiableDicomFileOptions(), _outputFile, _fileSystem))
+        using (var storeReportDestination = new CsvDestination(new CsvReportDestinationOptions(), _outputFile))
         {
             RegexRule updateRule;
 
@@ -155,15 +159,11 @@ public class UnattendedReviewer
             storeReport.CloseReport();
         }
 
-        Log(
-            $"Ignore Rules Used:{Environment.NewLine}{string.Join(Environment.NewLine, _ignoreRulesUsed.OrderBy(k => k.Value).Select(k => $"{k.Key.IfPattern} - {k.Value:N0}"))}", false);
-
-        Log(
-            $"Update Rules Used:{Environment.NewLine}{string.Join(Environment.NewLine, _updateRulesUsed.OrderBy(k => k.Value).Select(k => $"{k.Key.IfPattern} - {k.Value:N0}"))}", false);
-
+        Log($"Ignore Rules Used:{Environment.NewLine}{string.Join(Environment.NewLine, _ignoreRulesUsed.OrderBy(k => k.Value).Select(k => $"{k.Key.IfPattern} - {k.Value:N0}"))}", false);
+        Log($"Update Rules Used:{Environment.NewLine}{string.Join(Environment.NewLine, _updateRulesUsed.OrderBy(k => k.Value).Select(k => $"{k.Key.IfPattern} - {k.Value:N0}"))}", false);
         Log($"Errors:{Environment.NewLine}{string.Join(Environment.NewLine, errors.Select(e => e.ToString()))}", false);
-
         Log($"Finished {Total:N0} updates={Updates:N0} ignored={Ignores:N0} out={Unresolved:N0} err={errors.Count:N0}", true);
+
         return 0;
     }
 
