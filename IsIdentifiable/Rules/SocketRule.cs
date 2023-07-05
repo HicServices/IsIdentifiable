@@ -109,9 +109,8 @@ public class SocketRule : IAppliableRule, IDisposable
 
         for (var i = 0; i < result.Length; i += parts)
         {
-            if (!Enum.TryParse(typeof(FailureClassification), result[i], true, out var c))
+            if (!Enum.TryParse<FailureClassification>(result[i], true, out var classification))
                 throw new Exception($"Could not parse TCP client classification '{result[i]}' (expected a member of Enum FailureClassification)");
-            var classification = (FailureClassification)c;
 
             if (!int.TryParse(result[i + 1], out var offset))
                 throw new Exception($"Failed to parse offset from TCP client response.  Response was '{result[i + 1]}' (expected int)");

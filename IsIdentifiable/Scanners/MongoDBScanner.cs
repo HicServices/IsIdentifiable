@@ -57,7 +57,7 @@ public class MongoDBScanner : ResourceScannerBase
         _treeFailureReport = treeFailureReport;
 
         _documentsAreDicom = options.DocumentsAreDicom;
-       
+
         var client = new MongoClient(options.MongoDBConnectionString);
 
         if (!client.ListDatabaseNames().ToList().Contains(options.DatabaseName))

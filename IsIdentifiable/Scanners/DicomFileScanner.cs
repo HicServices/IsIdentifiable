@@ -42,10 +42,8 @@ public class DicomFileScanner : ResourceScannerBase, IFileScanner
     private readonly bool _rotate;
 
     /// <summary>
-    /// Creates a new instance based on the <paramref name="opts"/>.  Options include what
-    /// reports to write out, wether to perform OCR etc.
+    /// Creates a new instance based on the <paramref name="options"/>
     /// </summary>
-    /// <param name="opts"></param>
     /// <param name="fileSystem"></param>
     /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
     /// <exception cref="System.IO.FileNotFoundException"></exception>

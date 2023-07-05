@@ -42,7 +42,7 @@ public class CsvAllowList : IAllowListSource
     /// Returns all 
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<string> GetAllowList()
+    public IEnumerable<string?> GetAllowList()
     {
         if (!_firstTime)
             throw new Exception("Allow list has already been read from file.  This method should only be called once");

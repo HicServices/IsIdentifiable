@@ -23,7 +23,7 @@ public class CsvDestination : ReportDestination
     private bool _headerWritten;
 
     /// <summary>
-    /// Creates a new report destination in which values/aggregates are written to CSV (at <see cref="destinationFile"/>)
+    /// Creates a new report destination in which values/aggregates are written the specified <paramref name="destinationCsvFile"/>
     /// </summary>
     /// <param name="options"></param>
     /// <param name="csvConfiguration"></param>
@@ -93,7 +93,7 @@ public class CsvDestination : ReportDestination
     }
 
     /// <summary>
-    /// Flushes and disposes of IO handles to <see cref="ReportPath"/>
+    /// Flushes and disposes of IO handles
     /// </summary>
     public override void Dispose()
     {

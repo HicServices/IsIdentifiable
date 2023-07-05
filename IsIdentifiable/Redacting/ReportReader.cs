@@ -29,7 +29,7 @@ public class ReportReader
     /// <summary>
     /// The <see cref="CurrentIndex"/> of <see cref="Failures"/> or null
     /// </summary>
-    public Failure Current => _current < Failures.Length ? Failures[_current] : null;
+    public Failure? Current => _current < Failures.Length ? Failures[_current] : null;
 
     /// <summary>
     /// True if <see cref="CurrentIndex"/> is after the end of the <see cref="Failures"/>

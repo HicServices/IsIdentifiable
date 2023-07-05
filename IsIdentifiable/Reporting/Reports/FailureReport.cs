@@ -1,7 +1,6 @@
 using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
 using IsIdentifiable.Reporting.Destinations;
-using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 

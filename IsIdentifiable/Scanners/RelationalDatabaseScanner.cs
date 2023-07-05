@@ -3,7 +3,6 @@ using FAnsi.Discovery.QuerySyntax;
 using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
 using IsIdentifiable.Util;
-using NLog;
 using System;
 using System.Data;
 using System.Data.Common;
