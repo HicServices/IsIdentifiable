@@ -4,7 +4,7 @@ using IsIdentifiable.Reporting.Reports;
 namespace ii.Scan;
 
 [Verb("mongodb")]
-internal class MongoDBVerb : CliVerbBase
+internal class MongoDBCliVerb : BaseCliVerb
 {
     [Value(
         0,
@@ -25,7 +25,7 @@ internal class MongoDBVerb : CliVerbBase
     public bool GenerateTreeReport { get => _generateTreeReport; }
     private readonly bool _generateTreeReport;
 
-    public MongoDBVerb(string? queryFile, bool generateTreeReport, string yamlConfigPath)
+    public MongoDBCliVerb(string? queryFile, bool generateTreeReport, string yamlConfigPath)
         : base(yamlConfigPath)
     {
         _queryFile = queryFile;

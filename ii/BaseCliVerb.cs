@@ -2,7 +2,7 @@ using CommandLine;
 
 namespace ii;
 
-internal abstract class CliVerbBase
+internal abstract class BaseCliVerb
 {
     [Option(
         'y',
@@ -14,7 +14,7 @@ internal abstract class CliVerbBase
     public string YamlConfigPath { get => _yamlConfigPath; }
     private readonly string _yamlConfigPath;
 
-    public CliVerbBase(string yamlConfigPath)
+    public BaseCliVerb(string yamlConfigPath)
     {
         _yamlConfigPath = yamlConfigPath;
     }

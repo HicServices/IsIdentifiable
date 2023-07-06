@@ -210,14 +210,15 @@ class AllRulesManagerView : View, ITreeBuilder<object>
         }
         if (ReferenceEquals(forObject, Reviewer))
         {
-            if (!string.IsNullOrWhiteSpace(_reviewerOpts.Reportlist))
-            {
-                yield return new RowUpdater(_fileSystem, _fileSystem.FileInfo.New(_reviewerOpts.Reportlist));
-            }
-            if (!string.IsNullOrWhiteSpace(_reviewerOpts.IgnoreList))
-            {
-                yield return new IgnoreRuleGenerator(_fileSystem, _fileSystem.FileInfo.New(_reviewerOpts.IgnoreList));
-            }
+            // TODO(rkm 2023-07-06) Replace this
+            //if (!string.IsNullOrWhiteSpace(_reviewerOpts.Reportlist))
+            //{
+            //    yield return new RowUpdater(_fileSystem, _fileSystem.FileInfo.New(_reviewerOpts.Reportlist));
+            //}
+            //if (!string.IsNullOrWhiteSpace(_reviewerOpts.IgnoreList))
+            //{
+            //    yield return new IgnoreRuleGenerator(_fileSystem, _fileSystem.FileInfo.New(_reviewerOpts.IgnoreList));
+            //}
         }
 
         if (forObject is RuleSetFileNode ruleSet)

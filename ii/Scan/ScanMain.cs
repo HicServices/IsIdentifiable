@@ -35,15 +35,15 @@ internal static class ScanMain
             .GetDefaultParser()
             .ParseArguments(args, allVerbTypes.ToArray())
             .MapResult(
-                (DicomFileVerb o) => ScanDicomFiles(o, fileSystem),
-                (CSVFileVerb o) => ScanCSVFiles(o, fileSystem),
-                (RelationalDatabaseVerb o) => ScanRelationalDatabase(o, fileSystem),
-                (MongoDBVerb o) => ScanMongoDB(o, fileSystem),
+                (DicomFileCliVerb o) => ScanDicomFiles(o, fileSystem),
+                (CSVFileCliVerb o) => ScanCSVFiles(o, fileSystem),
+                (RelationalDatabaseCliVerb o) => ScanRelationalDatabase(o, fileSystem),
+                (MongoDBCliVerb o) => ScanMongoDB(o, fileSystem),
                 _ => 1
             );
     }
 
-    private static int ScanDicomFiles(DicomFileVerb cliOptions, IFileSystem fileSystem)
+    private static int ScanDicomFiles(DicomFileCliVerb cliOptions, IFileSystem fileSystem)
     {
         var allOptions = IsIdentifiableOptions.Load(fileSystem.FileInfo.New(cliOptions.YamlConfigPath));
         var options = allOptions.DicomFileScannerOptions ??
@@ -53,7 +53,7 @@ internal static class ScanMain
         return ScanFiles(options, fileSystem, runner, cliOptions.FileOrDir);
     }
 
-    private static int ScanCSVFiles(CSVFileVerb cliOptions, IFileSystem fileSystem)
+    private static int ScanCSVFiles(CSVFileCliVerb cliOptions, IFileSystem fileSystem)
     {
         var allOptions = IsIdentifiableOptions.Load(fileSystem.FileInfo.New(cliOptions.YamlConfigPath));
         var options = allOptions.CSVFileScannerOptions ??
@@ -119,7 +119,7 @@ internal static class ScanMain
         return unhandledErrors;
     }
 
-    private static int ScanRelationalDatabase(RelationalDatabaseVerb cliOptions, IFileSystem fileSystem)
+    private static int ScanRelationalDatabase(RelationalDatabaseCliVerb cliOptions, IFileSystem fileSystem)
     {
         var allOptions = IsIdentifiableOptions.Load(fileSystem.FileInfo.New(cliOptions.YamlConfigPath));
         var options = allOptions.RelationalDatabaseScannerOptions ??
@@ -159,7 +159,7 @@ internal static class ScanMain
         return runner.FailureCount;
     }
 
-    private static int ScanMongoDB(MongoDBVerb cliOptions, IFileSystem fileSystem)
+    private static int ScanMongoDB(MongoDBCliVerb cliOptions, IFileSystem fileSystem)
     {
         var allOptions = IsIdentifiableOptions.Load(fileSystem.FileInfo.New(cliOptions.YamlConfigPath));
         var options = allOptions.MongoDBScannerOptions ??

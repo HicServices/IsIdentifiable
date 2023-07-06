@@ -51,7 +51,7 @@ internal static class Program
                 .ParseArguments(verb, allVerbTypes.ToArray())
                 .MapResult(
                     (RedactVerb _) => RedactMain.Run(rest),
-                    (ReviewVerb _) => ReviewMain.Run(rest),
+                    (ReviewVerb _) => ReviewMain.Run(rest, FileSystem),
                     (ScanVerb _) => ScanMain.Run(rest, FileSystem),
                     _ => 1
                 );

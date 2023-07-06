@@ -74,8 +74,9 @@ public class UnattendedReviewer
         if (!fi.Exists)
             throw new System.IO.FileNotFoundException($"Could not find Failures file '{fi.FullName}'");
 
-        if (!opts.OnlyRules)
-            _targetOptions = target ?? throw new Exception("A single Target must be supplied for database updates");
+        // TODO(rkm 2023-07-06) Should always be true here
+        //if (!opts.OnlyRules)
+        //    _targetOptions = target ?? throw new Exception("A single Target must be supplied for database updates");
 
         _reportReader = new ReportReader(fi);
 

@@ -3,7 +3,7 @@ using CommandLine;
 namespace ii.Scan;
 
 [Verb("dcm", HelpText = "Scan DICOM files")]
-internal class DicomFileVerb : CliVerbBase
+internal class DicomFileCliVerb : BaseCliVerb
 {
     [Value(
         0,
@@ -23,7 +23,7 @@ internal class DicomFileVerb : CliVerbBase
     public bool Recursive { get => _recursive; }
     private readonly bool _recursive;
 
-    public DicomFileVerb(string fileOrDir, bool recursive, string yamlConfigPath)
+    public DicomFileCliVerb(string fileOrDir, bool recursive, string yamlConfigPath)
         : base(yamlConfigPath)
     {
         _fileOrDir = fileOrDir;

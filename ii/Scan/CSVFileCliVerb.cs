@@ -3,7 +3,7 @@ using CommandLine;
 namespace ii.Scan;
 
 [Verb("csv")]
-internal class CSVFileVerb : CliVerbBase
+internal class CSVFileCliVerb : BaseCliVerb
 {
     [Value(
         0,
@@ -32,7 +32,7 @@ internal class CSVFileVerb : CliVerbBase
     public int StopAfter { get => _stopAfter; }
     private readonly int _stopAfter;
 
-    public CSVFileVerb(
+    public CSVFileCliVerb(
         string fileOrDir,
         bool recursive,
         int stopAfter,

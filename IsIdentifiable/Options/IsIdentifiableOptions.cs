@@ -29,9 +29,6 @@ public class IsIdentifiableOptions
                 fileInfo.OpenText().ReadToEnd()
             );
 
-        if (yamlOptions == null)
-            throw new ArgumentException($"Could not find key '{YamlOptions.IS_IDENTIFIABLE_YAML_KEY}' in file");
-
-        return yamlOptions;
+        return yamlOptions ?? throw new ArgumentException($"Could not find key '{YamlOptions.IS_IDENTIFIABLE_YAML_KEY}' in file");
     }
 }

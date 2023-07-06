@@ -19,7 +19,7 @@ internal static class ParserHelpers
         });
     }
 
-    internal static T? TryParse<T>(string[] args) where T : CliVerbBase
+    internal static T? TryParse<T>(string[] args) where T : BaseCliVerb
     {
         var result = GetDefaultParser().ParseArguments<T>(args);
         if (result.Value == null)

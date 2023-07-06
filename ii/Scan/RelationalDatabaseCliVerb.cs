@@ -3,7 +3,7 @@ using CommandLine;
 namespace ii.Scan;
 
 [Verb("relational-database")]
-internal class RelationalDatabaseVerb : CliVerbBase
+internal class RelationalDatabaseCliVerb : BaseCliVerb
 {
     [Value(
         0,
@@ -47,7 +47,7 @@ internal class RelationalDatabaseVerb : CliVerbBase
     private readonly string? _targetDatabaseName;
     private readonly int _stopAfter;
 
-    public RelationalDatabaseVerb(
+    public RelationalDatabaseCliVerb(
         string tableName,
         string? databaseType,
         string? databaseConnectionString,
