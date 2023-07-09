@@ -29,6 +29,13 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
     /// <inheritdoc/>
     public int FailureCount { get; private set; }
 
+    /// <inheritdoc/>
+    public int FailurePartCount { get; private set; }
+
+    public long ValidationCacheHits { get; private set; }
+
+    public long ValidationCacheMisses { get; private set; }
+
     protected readonly ILogger Logger;
 
     // TODO(rkm 2023-07-05) See if this is still used after refactoring to inject all reports
@@ -48,9 +55,6 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
     private readonly int _validationCacheLimit;
     private readonly bool _ignoreDatesInText;
     private readonly bool _ignorePostcodes;
-    private long _validationCacheHits;
-    private long _validationCacheMisses;
-    private int _countOfFailureParts;
     private readonly Stopwatch _lifetime = Stopwatch.StartNew();
     private readonly int _logProgressEvery = 0;
 
@@ -232,16 +236,16 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
         //if we have the cached result use it
         if (cache.TryGetValue(fieldValue, out FailurePart[]? result))
         {
-            _validationCacheHits++;
-            _countOfFailureParts += result!.Length;
+            ValidationCacheHits++;
+            FailurePartCount += result!.Length;
             return result;
         }
 
-        _validationCacheMisses++;
+        ValidationCacheMisses++;
 
         //otherwise run ValidateImpl and cache the result
         var freshResult = ValidateImpl(fieldName, fieldValue).ToArray();
-        _countOfFailureParts += freshResult.Length;
+        FailurePartCount += freshResult.Length;
         return cache.Set(fieldValue, freshResult, new MemoryCacheEntryOptions()
         {
             Size = 1
@@ -365,8 +369,8 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
             d.Dispose();
 
         Logger?.Info($"Total runtime for {GetType().Name}:{_lifetime.Elapsed}");
-        Logger?.Info($"_validationCacheHits:{_validationCacheHits} Total _validationCacheMisses:{_validationCacheMisses}");
-        Logger?.Info($"Total FailurePart identified: {_countOfFailureParts}");
+        Logger?.Info($"ValidationCacheHits:{ValidationCacheHits} Total ValidationCacheMisses:{ValidationCacheMisses}");
+        Logger?.Info($"Total FailurePart identified: {FailurePartCount}");
     }
 
     protected abstract void DisposeImpl();

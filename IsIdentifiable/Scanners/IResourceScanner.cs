@@ -10,6 +10,11 @@ public interface IResourceScanner
     int FailureCount { get; }
 
     /// <summary>
+    /// The number of <see cref="FailurePart"/>s produced since creation or since <see cref="Reset"/> has been called
+    /// </summary>
+    int FailurePartCount { get; }
+
+    /// <summary>
     /// Reset the scanner to its initial state.
     /// </summary>
     void Reset();
