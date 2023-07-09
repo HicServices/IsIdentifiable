@@ -21,11 +21,11 @@ namespace IsIdentifiable.Redacting;
 /// </summary>
 public class UnattendedReviewer
 {
-    private readonly DatabaseTargetOptions? _targetOptions;
+    private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
     private readonly ReportReader _reportReader;
     private readonly RowUpdater _updater;
     private readonly IgnoreRuleGenerator _ignorer;
-    private readonly IFileSystem _fileSystem;
+    private readonly DiscoveredServer _discoveredServer;
     private readonly IFileInfo _outputFile;
 
     /// <summary>
@@ -47,7 +47,6 @@ public class UnattendedReviewer
     /// Total number of <see cref="Failure"/> processed so far
     /// </summary>
     public int Total = 0;
-    private readonly Logger _log;
 
     readonly Dictionary<RegexRule, int> _updateRulesUsed = new();
     readonly Dictionary<RegexRule, int> _ignoreRulesUsed = new();
@@ -55,38 +54,29 @@ public class UnattendedReviewer
     /// <summary>
     /// Creates a new instance that will connect to the database server (<paramref name="target"/>) and perform redactions using the <paramref name="updater"/>
     /// </summary>
-    /// <param name="opts">CLI options for the process</param>
-    /// <param name="target">DBMS to connect to for redacting</param>
     /// <param name="ignorer">Rules base for detecting false positives</param>
     /// <param name="updater">Rules base for redacting true positives</param>
     /// <param name="fileSystem"></param>
-    public UnattendedReviewer(IsIdentifiableReviewerOptions opts, DatabaseTargetOptions? target, IgnoreRuleGenerator ignorer, RowUpdater updater, IFileSystem fileSystem)
+    public UnattendedReviewer(
+        DatabaseTargetOptions databaseTargetOptions,
+        IgnoreRuleGenerator ignorer,
+        RowUpdater updater,
+        IFileInfo failuresCsv,
+        IFileInfo outputFile
+    )
     {
-        _log = LogManager.GetCurrentClassLogger();
-
-        _fileSystem = fileSystem;
-
-        if (string.IsNullOrWhiteSpace(opts.FailuresCsv))
-            throw new Exception("Unattended requires a file of errors to process");
-
-        var fi = _fileSystem.FileInfo.New(opts.FailuresCsv);
-
-        if (!fi.Exists)
-            throw new System.IO.FileNotFoundException($"Could not find Failures file '{fi.FullName}'");
-
-        // TODO(rkm 2023-07-06) Should always be true here
-        //if (!opts.OnlyRules)
-        //    _targetOptions = target ?? throw new Exception("A single Target must be supplied for database updates");
-
-        _reportReader = new ReportReader(fi);
-
-        if (string.IsNullOrWhiteSpace(opts.UnattendedOutputPath))
-            throw new Exception("An output path must be specified for Failures that could not be resolved");
-
-        _outputFile = _fileSystem.FileInfo.New(opts.UnattendedOutputPath);
-
         _ignorer = ignorer;
         _updater = updater;
+        _outputFile = outputFile;
+
+        _discoveredServer = DatabaseTargetHelpers.GetDiscoveredServer(databaseTargetOptions);
+        if (!_discoveredServer.Exists())
+            throw new ArgumentException($"Failed to connect to {_discoveredServer.Name}", nameof(databaseTargetOptions));
+
+        if (!failuresCsv.Exists)
+            throw new System.IO.FileNotFoundException($"Could not find Failures file '{failuresCsv.FullName}'");
+
+        _reportReader = new ReportReader(failuresCsv);
     }
 
     /// <summary>
@@ -95,13 +85,12 @@ public class UnattendedReviewer
     /// <returns></returns>
     public int Run()
     {
-        DiscoveredServer? server = null;
-        if (_targetOptions != null)
-            server = DatabaseTargetHelpers.GetDiscoveredServer(_targetOptions);
+        // TODO(rkm 2023-07-05) Check no unprocessed rules in report before proceeding
 
         var errors = new List<Exception>();
 
-        var storeReport = new FailureStoreReport(_outputFile.Name, 100, _fileSystem);
+        // TODO(rkm 2023-07-09) Don't need both here
+        var storeReport = new FailureStoreReport(_outputFile.Name, 100, _outputFile.FileSystem);
 
         var sw = new Stopwatch();
         sw.Start();
@@ -118,7 +107,7 @@ public class UnattendedReviewer
 
                 try
                 {
-                    noUpdate = _updater.OnLoad(server, _reportReader.Current, out updateRule);
+                    noUpdate = _updater.OnLoad(_discoveredServer, _reportReader.Current, out updateRule);
                 }
                 catch (Exception e)
                 {
@@ -170,7 +159,7 @@ public class UnattendedReviewer
 
     private void Log(string msg, bool toConsole)
     {
-        _log.Info(msg);
+        _logger.Info(msg);
         if (toConsole)
             Console.WriteLine(msg);
     }

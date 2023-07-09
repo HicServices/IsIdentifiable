@@ -1,11 +1,13 @@
-using System;
-using System.IO.Abstractions;
+using System.Collections.Generic;
 using YamlDotNet.Serialization;
 
 namespace IsIdentifiable.Options;
 
 public class IsIdentifiableOptions
 {
+    [YamlMember(Alias = "DatabaseTargets")]
+    public List<DatabaseTargetOptions> DatabaseTargets { get; init; } = new();
+
     [YamlMember(Alias = "DicomFileScanner")]
     public DicomFileScannerOptions? DicomFileScannerOptions { get; init; }
 
@@ -17,18 +19,4 @@ public class IsIdentifiableOptions
 
     [YamlMember(Alias = "CSVFile")]
     public CSVFileScannerOptions? CSVFileScannerOptions { get; init; }
-
-    public static IsIdentifiableOptions Load(IFileInfo fileInfo) => Load<IsIdentifiableOptions>(fileInfo);
-
-    public static T Load<T>(IFileInfo fileInfo) where T : IsIdentifiableOptions
-    {
-        var yamlOptions = new DeserializerBuilder()
-            .IgnoreUnmatchedProperties()
-            .Build()
-            .Deserialize<T>(
-                fileInfo.OpenText().ReadToEnd()
-            );
-
-        return yamlOptions ?? throw new ArgumentException($"Could not find key '{YamlOptions.IS_IDENTIFIABLE_YAML_KEY}' in file");
-    }
 }

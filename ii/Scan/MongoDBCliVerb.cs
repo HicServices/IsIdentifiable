@@ -13,7 +13,6 @@ internal class MongoDBCliVerb : BaseCliVerb
         HelpText = "Path to a file containing the query to execute"
     )]
     public string? QueryFile { get => _queryFile; }
-    private readonly string? _queryFile;
 
     [Option(
         't',
@@ -23,9 +22,15 @@ internal class MongoDBCliVerb : BaseCliVerb
         HelpText = $"Generate a {nameof(TreeFailureReport)}"
     )]
     public bool GenerateTreeReport { get => _generateTreeReport; }
+
+    private readonly string? _queryFile;
     private readonly bool _generateTreeReport;
 
-    public MongoDBCliVerb(string? queryFile, bool generateTreeReport, string yamlConfigPath)
+    public MongoDBCliVerb(
+        string? queryFile,
+        bool generateTreeReport,
+        string yamlConfigPath
+    )
         : base(yamlConfigPath)
     {
         _queryFile = queryFile;

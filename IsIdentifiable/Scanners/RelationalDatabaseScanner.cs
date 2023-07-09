@@ -31,13 +31,13 @@ public class RelationalDatabaseScanner : ResourceScannerBase
     /// <exception cref="ArgumentException"></exception>
     public RelationalDatabaseScanner(
         RelationalDatabaseScannerOptions options,
+        DatabaseTargetOptions databaseTargetOptions,
         IFileSystem fileSystem,
         int stopAfter = 0
     )
         : base(options, fileSystem)
     {
-        var targetOptions = options.DatabaseTargets[0] ?? throw new ArgumentException("Must provide a database to target");
-        _database = DatabaseTargetHelpers.GetDiscoveredDatabase(targetOptions);
+        _database = DatabaseTargetHelpers.GetDiscoveredDatabase(databaseTargetOptions);
         _dbConnection = _database.Server.GetConnection();
         _dbConnection.Open();
         _topXResponse = stopAfter > 0 ? _database.Server.GetQuerySyntaxHelper().HowDoWeAchieveTopX(stopAfter) : null;

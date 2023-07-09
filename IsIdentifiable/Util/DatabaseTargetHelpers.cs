@@ -4,7 +4,7 @@ using System;
 
 namespace IsIdentifiable.Util;
 
-internal static class DatabaseTargetHelpers
+public static class DatabaseTargetHelpers
 {
     public static DiscoveredServer GetDiscoveredServer(DatabaseTargetOptions options)
     {

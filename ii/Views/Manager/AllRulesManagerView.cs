@@ -18,12 +18,11 @@ class AllRulesManagerView : View, ITreeBuilder<object>
     private const string Analyser = "Analyser Rules";
     private const string Reviewer = "Reviewer Rules";
     private readonly ScannerBaseOptions? _analyserOpts;
-    private readonly IsIdentifiableReviewerOptions _reviewerOpts;
     private readonly RuleDetailView _detailView;
     private readonly TreeView<object> _treeView;
     private readonly IFileSystem _fileSystem;
 
-    public AllRulesManagerView(ScannerBaseOptions? analyserOpts, IsIdentifiableReviewerOptions reviewerOpts, IFileSystem fileSystem)
+    public AllRulesManagerView(ScannerBaseOptions? analyserOpts, IFileSystem fileSystem)
     {
         _fileSystem = fileSystem;
 
@@ -31,7 +30,6 @@ class AllRulesManagerView : View, ITreeBuilder<object>
         Height = Dim.Fill();
 
         _analyserOpts = analyserOpts;
-        _reviewerOpts = reviewerOpts;
 
         _treeView = new TreeView<object>(this)
         {

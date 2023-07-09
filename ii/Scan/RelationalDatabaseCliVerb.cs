@@ -1,9 +1,10 @@
 using CommandLine;
+using ii.Options;
 
 namespace ii.Scan;
 
 [Verb("relational-database")]
-internal class RelationalDatabaseCliVerb : BaseCliVerb
+internal class RelationalDatabaseCliVerb : BaseCliVerb, IDatabaseTargetOptions
 {
     [Value(
         0,

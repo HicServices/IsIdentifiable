@@ -1,12 +1,20 @@
 using IsIdentifiable.Options;
+using System;
+using System.IO.Abstractions;
 using YamlDotNet.Serialization;
 
 namespace IsIdentifiablePlugin;
 
-internal sealed class YamlRDMPOptions
+internal class YamlOptions
 {
-    [YamlMember(Alias = YamlOptions.IS_IDENTIFIABLE_YAML_KEY)]
-    public IsIdentifiableRDMPOptions? IsIdentifiableRDMPOptions { get; init; }
+    [YamlMember(Alias = YamlOptionsConstants.IS_IDENTIFIABLE_YAML_KEY)]
+    public IsIdentifiableRDMPOptions? IsIdentifiableOptions { get; init; }
+
+    public static IsIdentifiableRDMPOptions LoadFrom(IFileInfo fileInfo)
+    {
+        var yamlOptions = YamlOptionsExtensions.Load<YamlOptions>(fileInfo);
+        return yamlOptions?.IsIdentifiableOptions ?? throw new ArgumentException($"Could not find key '{YamlOptionsConstants.IS_IDENTIFIABLE_YAML_KEY}' in file");
+    }
 }
 
 internal class IsIdentifiableRDMPOptions : IsIdentifiableOptions
@@ -15,7 +23,7 @@ internal class IsIdentifiableRDMPOptions : IsIdentifiableOptions
     public RDMPPipelineScannerOptions? RDMPPipelineScannerOptions { get; init; }
 }
 
-internal sealed class RDMPPipelineScannerOptions : ScannerBaseOptions
+internal class RDMPPipelineScannerOptions : ScannerBaseOptions
 {
 
 }

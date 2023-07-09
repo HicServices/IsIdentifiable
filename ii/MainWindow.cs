@@ -74,7 +74,7 @@ G - creates a regex pattern that matches only the failing part(s)
 
     private readonly View viewMain;
 
-    public MainWindow(ScannerBaseOptions? analyserOpts, IsIdentifiableReviewerOptions? opts, IgnoreRuleGenerator ignorer, RowUpdater updater, IFileSystem fileSystem)
+    public MainWindow(ScannerBaseOptions? analyserOpts, IgnoreRuleGenerator ignorer, RowUpdater updater, IFileSystem fileSystem)
     {
         _fileSystem = fileSystem;
 
@@ -96,7 +96,7 @@ G - creates a regex pattern that matches only the failing part(s)
 
         viewMain = new View() { Width = Dim.Fill(), Height = Dim.Fill() };
         rulesView = new RulesView();
-        rulesManager = new AllRulesManagerView(analyserOpts, opts, fileSystem);
+        rulesManager = new AllRulesManagerView(analyserOpts, fileSystem);
 
         _info = new Label("Info")
         {
@@ -195,8 +195,9 @@ G - creates a regex pattern that matches only the failing part(s)
         viewMain.Add(_valuePane);
         viewMain.Add(frame);
 
-        if (!string.IsNullOrWhiteSpace(opts.FailuresCsv))
-            OpenReport(opts.FailuresCsv, (e) => throw e);
+        // TODO(rkm 2023-07-09)
+        //if (!string.IsNullOrWhiteSpace(opts.FailuresCsv))
+        //    OpenReport(opts.FailuresCsv, (e) => throw e);
 
         var tabView = new TabView()
         {

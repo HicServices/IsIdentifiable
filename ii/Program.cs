@@ -41,18 +41,16 @@ internal static class Program
             return 1;
         }
 
-        var verb = args.Take(1);
-        var rest = args[1..] ?? Array.Empty<string>();
         var parser = ParserHelpers.GetDefaultParser();
 
         try
         {
             return parser
-                .ParseArguments(verb, allVerbTypes.ToArray())
+                .ParseArguments(args.Take(1), allVerbTypes.ToArray())
                 .MapResult(
-                    (RedactVerb _) => RedactMain.Run(rest),
-                    (ReviewVerb _) => ReviewMain.Run(rest, FileSystem),
-                    (ScanVerb _) => ScanMain.Run(rest, FileSystem),
+                    (RedactVerb _) => RedactMain.Run(args, FileSystem),
+                    (ReviewVerb _) => ReviewMain.Run(args, FileSystem),
+                    (ScanVerb _) => ScanMain.Run(args, FileSystem),
                     _ => 1
                 );
         }

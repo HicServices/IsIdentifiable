@@ -12,7 +12,6 @@ internal class DicomFileCliVerb : BaseCliVerb
         HelpText = "Filename or dir to process files in"
     )]
     public string FileOrDir { get => _fileOrDir; }
-    private readonly string _fileOrDir;
 
     [Option(
         'r',
@@ -21,9 +20,15 @@ internal class DicomFileCliVerb : BaseCliVerb
         HelpText = "Recursively search in directories"
     )]
     public bool Recursive { get => _recursive; }
+
+    private readonly string _fileOrDir;
     private readonly bool _recursive;
 
-    public DicomFileCliVerb(string fileOrDir, bool recursive, string yamlConfigPath)
+    public DicomFileCliVerb(
+        string fileOrDir,
+        bool recursive,
+        string yamlConfigPath
+    )
         : base(yamlConfigPath)
     {
         _fileOrDir = fileOrDir;

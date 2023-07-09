@@ -47,22 +47,19 @@ public class ExecuteCommandRunIsIdentifiable : BasicCommandExecution
         if (_configYaml == null)
             return;
 
-        var allOptions = IsIdentifiableOptions.Load(new FileSystem().FileInfo.New(_configYaml.FullName));
-        var relationalDatabaseScannerOptions = allOptions.RelationalDatabaseScannerOptions ??
+        var allOptions = YamlOptionsExtensions.Load<IsIdentifiableOptions>(new FileSystem().FileInfo.New(_configYaml.FullName));
+        var relationalDatabaseScannerOptions = allOptions?.RelationalDatabaseScannerOptions ??
             throw new ArgumentException($"Yaml file did not contain a {typeof(RelationalDatabaseScannerOptions)} key", nameof(_configYaml));
 
         var server = _catalogue.GetDistinctLiveDatabaseServer(DataAccessContext.InternalDataProcessing, true);
-        relationalDatabaseScannerOptions.DatabaseTargets.Insert(
-            0,
-            new DatabaseTargetOptions
-            {
-                Name = "from-catalogue",
-                DatabaseConnectionString = server.Builder.ConnectionString,
-                DatabaseType = server.DatabaseType,
-            }
-        );
+        var databaseTargetOptions = new DatabaseTargetOptions
+        {
+            Name = "from-catalogue",
+            DatabaseConnectionString = server.Builder.ConnectionString,
+            DatabaseType = server.DatabaseType,
+        };
 
-        using var runner = new RelationalDatabaseScanner(relationalDatabaseScannerOptions, new FileSystem());
+        using var runner = new RelationalDatabaseScanner(relationalDatabaseScannerOptions, databaseTargetOptions, new FileSystem());
         using var cts = new CancellationTokenSource();
 
         BasicActivator.Wait("Evaluating Table", Task.Run(() =>

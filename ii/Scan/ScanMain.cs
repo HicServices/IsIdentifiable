@@ -1,5 +1,4 @@
 using CommandLine;
-using FAnsi;
 using FAnsi.Implementation;
 using FAnsi.Implementations.MicrosoftSQL;
 using FAnsi.Implementations.MySql;
@@ -31,6 +30,9 @@ internal static class ScanMain
             select t
         );
 
+        // Skip the "scan" argument which was parsed first
+        args = args[1..];
+
         return ParserHelpers
             .GetDefaultParser()
             .ParseArguments(args, allVerbTypes.ToArray())
@@ -45,8 +47,8 @@ internal static class ScanMain
 
     private static int ScanDicomFiles(DicomFileCliVerb cliOptions, IFileSystem fileSystem)
     {
-        var allOptions = IsIdentifiableOptions.Load(fileSystem.FileInfo.New(cliOptions.YamlConfigPath));
-        var options = allOptions.DicomFileScannerOptions ??
+        var allOptions = IiYamlOptions.LoadFrom(fileSystem.FileInfo.New(cliOptions.YamlConfigPath));
+        var options = allOptions?.DicomFileScannerOptions ??
             throw new ArgumentException($"Yaml file did not contain a {typeof(DicomFileScannerOptions)} key", nameof(cliOptions));
 
         using var runner = new DicomFileScanner(options, fileSystem);
@@ -55,8 +57,8 @@ internal static class ScanMain
 
     private static int ScanCSVFiles(CSVFileCliVerb cliOptions, IFileSystem fileSystem)
     {
-        var allOptions = IsIdentifiableOptions.Load(fileSystem.FileInfo.New(cliOptions.YamlConfigPath));
-        var options = allOptions.CSVFileScannerOptions ??
+        var allOptions = IiYamlOptions.LoadFrom(fileSystem.FileInfo.New(cliOptions.YamlConfigPath));
+        var options = allOptions?.CSVFileScannerOptions ??
             throw new ArgumentException($"Yaml file did not contain a {typeof(RelationalDatabaseScannerOptions)} key", nameof(cliOptions));
 
         using var runner = new CsvFileScanner(options, fileSystem, cliOptions.StopAfter);
@@ -121,39 +123,18 @@ internal static class ScanMain
 
     private static int ScanRelationalDatabase(RelationalDatabaseCliVerb cliOptions, IFileSystem fileSystem)
     {
-        var allOptions = IsIdentifiableOptions.Load(fileSystem.FileInfo.New(cliOptions.YamlConfigPath));
+        var allOptions = IiYamlOptions.LoadFrom(fileSystem.FileInfo.New(cliOptions.YamlConfigPath));
         var options = allOptions.RelationalDatabaseScannerOptions ??
             throw new ArgumentException($"Yaml file did not contain a {typeof(RelationalDatabaseScannerOptions)} key", nameof(cliOptions));
 
-        DatabaseTargetOptions databaseTargetOptions;
-
-        if (cliOptions.TargetDatabaseName != null)
-        {
-            databaseTargetOptions =
-                options.DatabaseTargets.FirstOrDefault(t => string.Equals(t.Name, cliOptions.TargetDatabaseName, StringComparison.CurrentCultureIgnoreCase)) ??
-                throw new ArgumentException($"Yaml file did not contain the specified database {cliOptions.TargetDatabaseName}");
-        }
-        else
-        {
-            if (!Enum.TryParse<DatabaseType>(cliOptions.DatabaseType, ignoreCase: true, out var dbType))
-                throw new ArgumentException($"Could not interpret '{cliOptions.DatabaseType}' as a {typeof(DatabaseType)}");
-
-            databaseTargetOptions = new DatabaseTargetOptions
-            {
-                Name = "from-cli",
-                DatabaseConnectionString = cliOptions.DatabaseConnectionString,
-                DatabaseType = dbType,
-            };
-        }
-
-        options.DatabaseTargets.Insert(0, databaseTargetOptions);
+        var databaseTargetOptions = DatabaseTargetOptionsExtensions.OptionsFrom(allOptions.DatabaseTargets, cliOptions, "from-cli");
 
         ImplementationManager.Load<MicrosoftSQLImplementation>();
         ImplementationManager.Load<MySqlImplementation>();
         ImplementationManager.Load<PostgreSqlImplementation>();
         ImplementationManager.Load<OracleImplementation>();
 
-        using var runner = new RelationalDatabaseScanner(options, fileSystem, cliOptions.StopAfter);
+        using var runner = new RelationalDatabaseScanner(options, databaseTargetOptions, fileSystem, cliOptions.StopAfter);
         runner.Scan(cliOptions.TableName);
 
         return runner.FailureCount;
@@ -161,7 +142,7 @@ internal static class ScanMain
 
     private static int ScanMongoDB(MongoDBCliVerb cliOptions, IFileSystem fileSystem)
     {
-        var allOptions = IsIdentifiableOptions.Load(fileSystem.FileInfo.New(cliOptions.YamlConfigPath));
+        var allOptions = IiYamlOptions.LoadFrom(fileSystem.FileInfo.New(cliOptions.YamlConfigPath));
         var options = allOptions.MongoDBScannerOptions ??
             throw new ArgumentException($"Yaml file did not contain a {typeof(RelationalDatabaseScannerOptions)} key", nameof(cliOptions));
 

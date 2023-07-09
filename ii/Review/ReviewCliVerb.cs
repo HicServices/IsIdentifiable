@@ -14,7 +14,6 @@ internal class ReviewCliVerb : BaseCliVerb
         HelpText = "Sets UseSystemConsole to true for Terminal.gui (i.e. uses the NetDriver which is based on System.Console)"
     )]
     public bool UseSystemConsole { get => _useSystemConsole; }
-    private readonly bool _useSystemConsole;
 
     [Option(
         'r',
@@ -24,7 +23,6 @@ internal class ReviewCliVerb : BaseCliVerb
         HelpText = "File containing rules for when to issue UPDATE statements"
     )]
     public string ReportList { get => _reportList; }
-    private readonly string _reportList;
 
     [Option(
         'i',
@@ -34,6 +32,9 @@ internal class ReviewCliVerb : BaseCliVerb
         HelpText = "File containing rules for ignoring PII during redaction"
     )]
     public string IgnoreList { get => _ignoreList; }
+
+    private readonly bool _useSystemConsole;
+    private readonly string _reportList;
     private readonly string _ignoreList;
 
     public ReviewCliVerb(

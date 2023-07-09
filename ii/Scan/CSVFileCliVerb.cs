@@ -12,7 +12,6 @@ internal class CSVFileCliVerb : BaseCliVerb
         HelpText = "Filename or dir to process files in"
     )]
     public string FileOrDir { get => _fileOrDir; }
-    private readonly string _fileOrDir;
 
     [Option(
         'r',
@@ -21,7 +20,6 @@ internal class CSVFileCliVerb : BaseCliVerb
         HelpText = "Recursively search in directories"
     )]
     public bool Recursive { get => _recursive; }
-    private readonly bool _recursive;
 
     [Option(
         's',
@@ -30,6 +28,9 @@ internal class CSVFileCliVerb : BaseCliVerb
         HelpText = "Set to stop processing after x records e.g., only evalute top 1000 records of a table/file"
     )]
     public int StopAfter { get => _stopAfter; }
+
+    private readonly string _fileOrDir;
+    private readonly bool _recursive;
     private readonly int _stopAfter;
 
     public CSVFileCliVerb(

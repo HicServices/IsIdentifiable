@@ -61,9 +61,9 @@ public class IsIdentifiablePipelineComponent : IDataFlowComponent<DataTable>, IC
     private void LoadConfigFile()
     {
         var fi = _fileSystem.FileInfo.New(YamlConfigFile);
-        var allOptions = IsIdentifiableOptions.Load<IsIdentifiableRDMPOptions>(fi);
+        var allOptions = YamlOptionsExtensions.Load<IsIdentifiableRDMPOptions>(fi);
 
-        _options = allOptions.RDMPPipelineScannerOptions ??
+        _options = allOptions?.RDMPPipelineScannerOptions ??
             throw new ArgumentException($"Yaml file did not contain a {typeof(RDMPPipelineScannerOptions)} key", nameof(YamlConfigFile));
     }
 }

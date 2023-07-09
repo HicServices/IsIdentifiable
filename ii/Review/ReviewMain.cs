@@ -23,8 +23,8 @@ internal static class ReviewMain
         if (cliOptions == null)
             return 1;
 
-        var allOptions = IsIdentifiableOptions.Load<IiOptions>(fileSystem.FileInfo.New(cliOptions.YamlConfigPath));
-        var options = allOptions.ReviewerOptions ??
+        var allOptions = YamlOptionsExtensions.Load<IiOptions>(fileSystem.FileInfo.New(cliOptions.YamlConfigPath));
+        var options = allOptions?.ReviewerOptions ??
             throw new ArgumentException($"Yaml file did not contain a {typeof(ReviewerOptions)} key", nameof(cliOptions));
 
         Application.UseSystemConsole = cliOptions.UseSystemConsole;
@@ -103,7 +103,6 @@ internal static class ReviewMain
 
         // TODO(rkm 2023-07-06) Fix null options
         using var mainWindow = new MainWindow(
-            null,
             null,
             ignorer,
             updater,
