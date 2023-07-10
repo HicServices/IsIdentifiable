@@ -47,8 +47,12 @@ public class DicomFileScanner : ResourceScannerBase, IFileScanner
     /// <param name="fileSystem"></param>
     /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
     /// <exception cref="System.IO.FileNotFoundException"></exception>
-    public DicomFileScanner(DicomFileScannerOptions options, IFileSystem fileSystem)
-        : base(options, fileSystem)
+    public DicomFileScanner(
+        DicomFileScannerOptions options,
+        IFileSystem fileSystem,
+        params IFailureReport[] reports
+    )
+        : base(options, fileSystem, reports)
     {
         _ignoreTextLessThan = options.IgnoreTextLessThan;
         _datesAreFailures = options.DatesAreFailures;

@@ -50,9 +50,10 @@ public class MongoDBScanner : ResourceScannerBase
     public MongoDBScanner(
         MongoDBScannerOptions options,
         TreeFailureReport? treeFailureReport,
-        IFileSystem fileSystem
+        IFileSystem fileSystem,
+        params IFailureReport[] reports
     )
-        : base(options, fileSystem)
+        : base(options, fileSystem, reports)
     {
         _treeFailureReport = treeFailureReport;
 

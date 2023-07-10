@@ -2,7 +2,7 @@
 
 namespace IsIdentifiable.Options;
 
-public sealed class CSVFileScannerOptions : ScannerBaseOptions, IFileScannerOptions
+public sealed class CSVFileScannerOptions : ResourceScannerBaseOptions, IFileScannerOptions
 {
     /// <summary>
     /// The culture of dates, numbers etc if different from system culture

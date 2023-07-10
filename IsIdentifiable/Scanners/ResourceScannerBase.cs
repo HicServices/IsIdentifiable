@@ -59,7 +59,7 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
     private readonly int _logProgressEvery = 0;
 
     protected ResourceScannerBase(
-        ScannerBaseOptions options,
+        ResourceScannerBaseOptions options,
         IFileSystem fileSystem,
         params IFailureReport[] reports
     )
@@ -217,6 +217,12 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
 
         if (!foundRules)
             throw new ArgumentException($"Specififed file did not contain any rules");
+    }
+
+    // TODO(rkm 2023-07-10) Temporary - refactor out later
+    public void AddCustomRule(IRegexRule rule)
+    {
+        _customRules.Add(rule);
     }
 
     /// <summary>

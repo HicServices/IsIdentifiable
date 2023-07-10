@@ -1,6 +1,7 @@
 using CsvHelper;
 using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
+using IsIdentifiable.Reporting.Reports;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -24,9 +25,10 @@ public class CsvFileScanner : ResourceScannerBase, IFileScanner
     public CsvFileScanner(
         CSVFileScannerOptions options,
         IFileSystem fileSystem,
-        int stopAfter
+        int stopAfter,
+        params IFailureReport[] reports
     )
-        : base(options, fileSystem)
+        : base(options, fileSystem, reports)
     {
         _culture = options.Culture;
         _stopAfter = stopAfter;

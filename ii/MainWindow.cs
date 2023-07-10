@@ -74,7 +74,7 @@ G - creates a regex pattern that matches only the failing part(s)
 
     private readonly View viewMain;
 
-    public MainWindow(ScannerBaseOptions? analyserOpts, IgnoreRuleGenerator ignorer, RowUpdater updater, IFileSystem fileSystem)
+    public MainWindow(ResourceScannerBaseOptions? analyserOpts, IgnoreRuleGenerator ignorer, RowUpdater updater, IFileSystem fileSystem)
     {
         _fileSystem = fileSystem;
 

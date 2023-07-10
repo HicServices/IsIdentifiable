@@ -1,6 +1,6 @@
 ﻿namespace IsIdentifiable.Options;
 
-public sealed class MongoDBScannerOptions : ScannerBaseOptions
+public sealed class MongoDBScannerOptions : ResourceScannerBaseOptions
 {
     /// <summary>
     /// The MongoDB database to connect to

@@ -1,6 +1,5 @@
 using IsIdentifiable.Failures;
 using IsIdentifiable.Rules;
-using IsIdentifiable.Runners;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
@@ -81,7 +80,7 @@ class ConsensusRuleTests
           Port: 567";
 
 
-        var deserializer = RunnerBase.GetDeserializer();
+        var deserializer = RuleHelpers.GetRuleDeserializer();
         var ruleSet = deserializer.Deserialize<RuleSet>(yaml);
 
         Assert.IsInstanceOf(typeof(ConsensusRule), ruleSet.ConsensusRules.Single());

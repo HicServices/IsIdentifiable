@@ -17,12 +17,12 @@ class AllRulesManagerView : View, ITreeBuilder<object>
 {
     private const string Analyser = "Analyser Rules";
     private const string Reviewer = "Reviewer Rules";
-    private readonly ScannerBaseOptions? _analyserOpts;
+    private readonly ResourceScannerBaseOptions? _analyserOpts;
     private readonly RuleDetailView _detailView;
     private readonly TreeView<object> _treeView;
     private readonly IFileSystem _fileSystem;
 
-    public AllRulesManagerView(ScannerBaseOptions? analyserOpts, IFileSystem fileSystem)
+    public AllRulesManagerView(ResourceScannerBaseOptions? analyserOpts, IFileSystem fileSystem)
     {
         _fileSystem = fileSystem;
 

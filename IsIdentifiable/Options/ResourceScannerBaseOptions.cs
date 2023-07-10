@@ -1,8 +1,8 @@
-﻿using FAnsi;
+using FAnsi;
 
 namespace IsIdentifiable.Options;
 
-public abstract class ScannerBaseOptions
+public abstract class ResourceScannerBaseOptions
 {
     /// <summary>
     /// Set this to enable progress logging every N items (files, rows etc.).

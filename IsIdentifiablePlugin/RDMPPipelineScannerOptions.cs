@@ -23,7 +23,7 @@ internal class IsIdentifiableRDMPOptions : IsIdentifiableOptions
     public RDMPPipelineScannerOptions? RDMPPipelineScannerOptions { get; init; }
 }
 
-internal class RDMPPipelineScannerOptions : ScannerBaseOptions
+internal class RDMPPipelineScannerOptions : ResourceScannerBaseOptions
 {
 
 }

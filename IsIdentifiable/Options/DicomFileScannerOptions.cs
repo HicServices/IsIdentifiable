@@ -1,6 +1,6 @@
 ﻿namespace IsIdentifiable.Options;
 
-public sealed class DicomFileScannerOptions : ScannerBaseOptions, IFileScannerOptions
+public sealed class DicomFileScannerOptions : ResourceScannerBaseOptions, IFileScannerOptions
 {
     /// <inheritdoc/>
     public string SearchPattern { get; init; } = DEFAULT_DCM_PREFIX;

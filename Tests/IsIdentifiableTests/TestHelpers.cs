@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
+using System;
 
 namespace IsIdentifiable.Tests;
 
@@ -20,8 +21,11 @@ public class TestHelpers
     {
         StringAssert.Contains(needle.Replace("\r\n", "\n"), haystack.Replace("\r\n", "\n"));
     }
+
     public static void DoesNotContain(string needle, string haystack)
     {
         StringAssert.DoesNotContain(needle.Replace("\r\n", "\n"), haystack.Replace("\r\n", "\n"));
     }
+
+    internal static string EnvironmentStringJoin(params string[] lines) => string.Join(Environment.NewLine, lines);
 }

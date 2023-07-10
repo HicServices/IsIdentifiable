@@ -10,7 +10,7 @@ namespace IsIdentifiable.Tests;
 
 class StoreReportTests
 {
-    private MockFileSystem _fileSystem;
+    private MockFileSystem _fileSystem = null!;
 
     [SetUp]
     public void SetUp()
@@ -19,14 +19,14 @@ class StoreReportTests
     }
 
     [Test]
-    public void TestReconstructionFromCsv()
+    public void ReconstructionFromCsv()
     {
-        var opts = new IsIdentifiableRelationalDatabaseOptions();
+        var opts = new IsIdentifiableOptions();
         var dir = _fileSystem.DirectoryInfo.New(".");
 
-        opts.DestinationCsvFolder = dir.FullName;
-        opts.TableName = "HappyOzz";
-        opts.StoreReport = true;
+        // TODO(rkm 2023-07-10) Refactor this
+        //opts.DestinationCsvFolder = dir.FullName;
+        //opts.TableName = "HappyOzz";
 
         var report = new FailureStoreReport("HappyOzz", 1000, _fileSystem);
         report.AddDestinations(opts);
@@ -76,7 +76,7 @@ class StoreReportTests
 
 
     [Test]
-    public void Test_Includes()
+    public void Includes()
     {
         var origin = "this word fff is the problem";
 
@@ -91,7 +91,7 @@ class StoreReportTests
     }
 
     [Test]
-    public void Test_IncludesSingleChar()
+    public void IncludesSingleChar()
     {
         var origin = "this word f is the problem";
 
@@ -105,10 +105,8 @@ class StoreReportTests
         Assert.IsFalse(part.Includes(13));
     }
 
-
-
     [Test]
-    public void Test_HaveSameProblem()
+    public void HaveSameProblem()
     {
         var f1 = new Failure(new List<FailurePart>())
         {

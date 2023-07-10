@@ -1,6 +1,6 @@
 namespace IsIdentifiable.Options;
 
-public sealed class RelationalDatabaseScannerOptions : ScannerBaseOptions
+public sealed class RelationalDatabaseScannerOptions : ResourceScannerBaseOptions
 {
 
 }

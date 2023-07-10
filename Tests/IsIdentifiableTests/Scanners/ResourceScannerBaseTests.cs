@@ -46,7 +46,7 @@ public class ResourceScannerBaseTests
         protected override void DisposeImpl() { }
     }
 
-    private class TestScannerBaseOptions : ScannerBaseOptions
+    private class TestScannerBaseOptions : ResourceScannerBaseOptions
     {
 
     }

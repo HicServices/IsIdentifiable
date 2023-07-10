@@ -1,7 +1,7 @@
 using IsIdentifiable.Options;
 using IsIdentifiable.Reporting.Reports;
 using IsIdentifiable.Rules;
-using IsIdentifiable.Runners;
+using IsIdentifiable.Scanners;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using NUnit.Framework;
@@ -14,7 +14,7 @@ namespace IsIdentifiable.Tests.RunnerTests
 {
     internal class MongoDbTests
     {
-        private MockFileSystem _fileSystem;
+        private MockFileSystem _fileSystem = null!;
 
         [SetUp]
         public void SetUp()
@@ -171,13 +171,11 @@ namespace IsIdentifiable.Tests.RunnerTests
             var doc = BsonDocument.Parse(json);
 
             // Insert document into database
-            var collection =
-                db.GetCollection<BsonDocument>(collectionName);
+            var collection = db.GetCollection<BsonDocument>(collectionName);
 
-            var res = collection.BulkWrite(new[] {
-                doc
-            }.Select(d => new InsertOneModel<BsonDocument>(d)));
-
+            var res = collection
+                .BulkWrite(new[] { doc }
+                .Select(d => new InsertOneModel<BsonDocument>(d)));
             Assert.IsTrue(res.IsAcknowledged);
 
             var read = collection.WithReadConcern(ReadConcern.Available);
@@ -185,15 +183,20 @@ namespace IsIdentifiable.Tests.RunnerTests
 
             var settings = GetMongoClientSettings();
 
-            var runner = new MongoRunner(new IsIdentifiableMongoOptions
-            {
-                DatabaseName = databaseName,
-                CollectionName = collectionName,
-                MongoConnectionString = $"mongodb://{settings.Server}",
-                StoreReport = true
-            }, _fileSystem);
+            var memoryReport = new ToMemoryFailureReport();
+            var runner = new MongoDBScanner(
+                new MongoDBScannerOptions
+                {
+                    DatabaseName = databaseName,
+                    CollectionName = collectionName,
+                    MongoDBConnectionString = $"mongodb://{settings.Server}",
+                },
+                treeFailureReport: null,
+                _fileSystem,
+                memoryReport
+            );
 
-            runner.CustomRules.Add(new RegexRule
+            runner.AddCustomRule(new RegexRule
             {
                 Action = RuleAction.Report,
                 As = Failures.FailureClassification.Person,
@@ -201,16 +204,12 @@ namespace IsIdentifiable.Tests.RunnerTests
                 IfPattern = regex
             });
 
-            var toMem = new ToMemoryFailureReport();
-            runner.Reports.Add(toMem);
+            runner.Scan(null);
+            Assert.AreEqual(1, runner.FailurePartCount, "IsIdentifiable did not find exactly 1 failing value, this test only caters for single matches");
 
-            Assert.AreEqual(0, runner.Run(), "MongoDb runner returned a non zero exit code. Indicating failure");
-            Assert.AreEqual(1, runner.CountOfFailureParts, "IsIdentifiable did not find exactly 1 failing value, this test only caters for single matches");
-
-
-            var f = toMem.Failures.Single();
-            Assert.AreEqual(expectedFullPath, f.ProblemField);
-            Assert.AreEqual(expectedFailingValue, f.ProblemValue);
+            var failure = memoryReport.Failures.Single();
+            Assert.AreEqual(expectedFullPath, failure.ProblemField);
+            Assert.AreEqual(expectedFailingValue, failure.ProblemValue);
         }
     }
 }

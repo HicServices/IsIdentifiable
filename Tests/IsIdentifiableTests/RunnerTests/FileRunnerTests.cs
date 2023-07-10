@@ -1,7 +1,7 @@
-﻿using IsIdentifiable.Failures;
+using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
 using IsIdentifiable.Reporting.Reports;
-using IsIdentifiable.Runners;
+using IsIdentifiable.Scanners;
 using Moq;
 using NUnit.Framework;
 using System.IO.Abstractions.TestingHelpers;
@@ -10,7 +10,7 @@ namespace IsIdentifiable.Tests.RunnerTests;
 
 class FileRunnerTests
 {
-    private MockFileSystem _fileSystem;
+    private MockFileSystem _fileSystem = null!;
 
     [SetUp]
     public void SetUp()
@@ -31,18 +31,20 @@ class FileRunnerTests
             s.Close();
         }
 
-        var runner = new FileRunner(new IsIdentifiableFileOptions() { File = fi, StoreReport = true }, _fileSystem);
-
         var reporter = new Mock<IFailureReport>(MockBehavior.Strict);
 
         reporter.Setup(f => f.Add(It.IsAny<Failure>())).Callback<Failure>(f => Assert.AreEqual("0102821172", f.ProblemValue));
         reporter.Setup(f => f.DoneRows(1));
         reporter.Setup(f => f.CloseReport());
 
+        var scanner = new CsvFileScanner(
+            new CSVFileScannerOptions(),
+            _fileSystem,
+            stopAfter: 0,
+            reporter.Object
+        );
 
-        runner.Reports.Add(reporter.Object);
-
-        runner.Run();
+        scanner.Scan(fi);
 
         reporter.Verify();
     }
@@ -63,23 +65,22 @@ class FileRunnerTests
             s.Close();
         }
 
-        var runner = new FileRunner(new IsIdentifiableFileOptions() { File = fi, StoreReport = true, Top = 22 }, _fileSystem);
-
-        var reporter = new Mock<IFailureReport>(MockBehavior.Strict);
-
         var done = 0;
-
+        var reporter = new Mock<IFailureReport>(MockBehavior.Strict);
         reporter.Setup(f => f.Add(It.IsAny<Failure>())).Callback<Failure>(f => Assert.AreEqual("0102821172", f.ProblemValue));
         reporter.Setup(f => f.DoneRows(1)).Callback(() => done++);
         reporter.Setup(f => f.CloseReport());
 
+        var scanner = new CsvFileScanner(
+            new CSVFileScannerOptions(),
+            _fileSystem,
+            stopAfter: 22,
+            reporter.Object
+        );
 
-        runner.Reports.Add(reporter.Object);
-
-        runner.Run();
+        scanner.Scan(fi);
 
         reporter.Verify();
-
         Assert.AreEqual(22, done);
     }
 }

@@ -1,6 +1,6 @@
-﻿using IsIdentifiable.Options;
+using IsIdentifiable.Options;
 using IsIdentifiable.Reporting.Reports;
-using IsIdentifiable.Runners;
+using IsIdentifiable.Scanners;
 using NUnit.Framework;
 using System.IO;
 using System.Linq;
@@ -12,7 +12,7 @@ public class DicomFileRunnerTest
     #region Fixture Methods
 
     private const string DataDirectory = @"../../../../../data/";
-    private DirectoryInfo _tessDir;
+    private DirectoryInfo _tessDir = null!;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
@@ -49,14 +49,13 @@ public class DicomFileRunnerTest
     [TestCase(false)]
     public void IgnorePixelDataLessThan(bool ignoreShortText)
     {
-        var opts = new IsIdentifiableDicomFileOptions
+        var opts = new DicomFileScannerOptions
         {
-            ColumnReport = true,
             TessDirectory = _tessDir.FullName,
 
             // If we ignore less than 170 then only 1 bit of text should be reported.
             // NOTE(rkm 2020-11-16) The test image should report 3 bits of text with lengths 123, 127, and 170.
-            IgnoreTextLessThan = ignoreShortText ? 170 : 0U
+            IgnoreTextLessThan = ignoreShortText ? 170 : 0
         };
 
         var fileSystem = new System.IO.Abstractions.FileSystem();
@@ -64,17 +63,15 @@ public class DicomFileRunnerTest
         var fileName = Path.Combine(TestContext.CurrentContext.TestDirectory, nameof(DicomFileRunnerTest), "f1.dcm");
         TestData.Create(fileSystem.FileInfo.New(fileName), TestData.BURNED_IN_TEXT_IMG);
 
-        var runner = new DicomFileRunner(opts, fileSystem);
+        var memoryReport = new ToMemoryFailureReport();
+        var scanner = new DicomFileScanner(opts, fileSystem, memoryReport);
 
         var fileInfo = fileSystem.FileInfo.New(fileName);
         Assert.True(fileInfo.Exists);
 
-        var toMemory = new ToMemoryFailureReport();
-        runner.Reports.Add(toMemory);
+        scanner.Scan(fileInfo);
 
-        runner.ValidateDicomFile(fileInfo);
-
-        var failures = toMemory.Failures.ToList();
+        var failures = memoryReport.Failures.ToList();
         Assert.AreEqual(ignoreShortText ? 1 : 3, failures.Count);
     }
 
