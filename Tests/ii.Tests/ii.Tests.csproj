@@ -6,6 +6,6 @@
         <OutputType>Library</OutputType>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\ii\ii.csproj" />
+        <ProjectReference Include="..\..\src\ii\ii.csproj" />
     </ItemGroup>
 </Project>

@@ -1,13 +1,12 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IsIdentifiable", "IsIdentifiable\IsIdentifiable.csproj", "{6415BA05-C01E-4BCC-8F39-2D7F6E197805}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IsIdentifiable", "src\IsIdentifiable\IsIdentifiable.csproj", "{6415BA05-C01E-4BCC-8F39-2D7F6E197805}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ii", "ii\ii.csproj", "{20854F5A-3288-4D65-A412-7EE58198133A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ii", "src\ii\ii.csproj", "{20854F5A-3288-4D65-A412-7EE58198133A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IsIdentifiable.Tests", "Tests\IsIdentifiableTests\IsIdentifiable.Tests.csproj", "{1B93CDDA-A1DD-439D-9E02-F97D8708DC8E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IsIdentifiable.Tests", "tests\IsIdentifiable.Tests\IsIdentifiable.Tests.csproj", "{1B93CDDA-A1DD-439D-9E02-F97D8708DC8E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EDEFBD82-6881-4C5C-B3BC-7E9CC178725A}"
 	ProjectSection(SolutionItems) = preProject
@@ -19,9 +18,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IsIdentifiablePlugin", "IsIdentifiablePlugin\IsIdentifiablePlugin.csproj", "{3BDB8F80-C301-4CC1-8511-7CAC3D5C3BD7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IsIdentifiablePlugin", "src\IsIdentifiablePlugin\IsIdentifiablePlugin.csproj", "{3BDB8F80-C301-4CC1-8511-7CAC3D5C3BD7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ii.Tests", "ii.Tests\ii.Tests.csproj", "{ED7896EE-AB66-4FD2-BC62-5D8FCCA29D1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ii.Tests", "tests\ii.Tests\ii.Tests.csproj", "{ED7896EE-AB66-4FD2-BC62-5D8FCCA29D1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

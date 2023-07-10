@@ -12,7 +12,7 @@
     <None Remove="theme.yaml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\SharedAssemblyInfo.cs" Link="SharedAssemblyInfo.cs" />
+    <Compile Include="..\..\SharedAssemblyInfo.cs" Link="SharedAssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ExampleReport.csv">

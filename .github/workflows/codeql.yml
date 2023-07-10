@@ -47,9 +47,9 @@ jobs:
         if: ${{ matrix.language == 'java' }}
         run: |
           sudo apt-get install -y libarchive-tools
-          mkdir -p nlp/uk.ac.dundee.hic.nerd/target/stanford-ner-2018-10-16
+          mkdir -p src/uk.ac.dundee.hic.nerd/target/stanford-ner-2018-10-16
           curl -sL https://nlp.stanford.edu/software/stanford-ner-2018-10-16.zip | bsdtar -xf- -C nlp/uk.ac.dundee.hic.nerd/target/stanford-ner-2018-10-16
-          mvn -f nlp/uk.ac.dundee.hic.nerd/pom.xml package
+          mvn -f src/uk.ac.dundee.hic.nerd/pom.xml package
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2

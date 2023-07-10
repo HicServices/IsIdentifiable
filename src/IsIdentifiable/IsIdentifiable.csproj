@@ -18,7 +18,7 @@
     <None Remove="Rules.template.yaml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\SharedAssemblyInfo.cs" Link="SharedAssemblyInfo.cs" />
+    <Compile Include="..\..\SharedAssemblyInfo.cs" Link="SharedAssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <NativeLibs Include="$(MSBuildThisFileDirectory)runtimes\**\*.so" />

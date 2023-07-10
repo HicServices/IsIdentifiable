@@ -39,7 +39,7 @@ jobs:
           cache: "maven"
       - name: Start MySQL
         run: |
-          mv Tests/IsIdentifiableTests/TestDatabases-github.xml Tests/IsIdentifiableTests/TestDatabases.xml
+          mv tests/IsIdentifiable.Tests/TestDatabases-github.xml tests/IsIdentifiable.Tests/TestDatabases.xml
           sudo systemctl start mysql.service
       - name: Start MongoDb
         uses: supercharge/mongodb-github-action@1.9.0
@@ -68,7 +68,7 @@ jobs:
       - name: Build Java NERD
         run: |
           set -exuo pipefail
-          cd nlp/uk.ac.dundee.hic.nerd
+          cd src/uk.ac.dundee.hic.nerd
           mkdir -p target/stanford-ner-2018-10-16
           curl -sL https://nlp.stanford.edu/software/stanford-ner-2018-10-16.zip | bsdtar -xf- -C target/stanford-ner-2018-10-16
           mvn -B -q compile assembly:single

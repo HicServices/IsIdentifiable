@@ -15,7 +15,7 @@ updates:
       - jas88
       - rkm
   - package-ecosystem: maven
-    directory: "/nlp/uk.ac.dundee.hic.nerd"
+    directory: "/src/uk.ac.dundee.hic.nerd"
     schedule:
       interval: daily
     reviewers:
