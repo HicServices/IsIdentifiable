@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup>
+    <Authors>Universities of Dundee (HIC) and Edinburgh (EPCC)</Authors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+    <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/SMI/IsIdentifiable</PackageProjectUrl>
+    <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+    <TargetFramework>net6</TargetFramework>
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
   </PropertyGroup>
 </Project>

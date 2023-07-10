@@ -2,24 +2,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>IsIdentifiable</AssemblyName>
-    <authors>Universities of Dundee and Edinburgh</authors>
-    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/SMI/IsIdentifiable</PackageProjectUrl>
     <OutputType>Library</OutputType>
     <description>Library for spotting identifiable data in flat files, dicom files and relational databases (Sql Server, MySql, Oracle).</description>
-    <PackageTags>Identifiable,Detection,Validation,NLP,OCR,Natural Language Processing,Optical Character Recognition</PackageTags>
-    <copyright>Copyright 2019</copyright>
-    <TargetFramework>net6.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <LangVersion>10.0</LangVersion>
+    <PackageTags>Identifiable,Detection,Validation,NLP,OCR,Natural Language Processing,Optical Character Recognition</PackageTags>    
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Rules.template.yaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\..\SharedAssemblyInfo.cs" Link="SharedAssemblyInfo.cs" />
-  </ItemGroup>
+  </ItemGroup>  
   <ItemGroup>
     <NativeLibs Include="$(MSBuildThisFileDirectory)runtimes\**\*.so" />
     <Content Include="@(NativeLibs)">
@@ -30,19 +19,19 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="CsvHelper" Version="30.0.1" />
-    <PackageReference Include="Equ" Version="2.3.0" />
-    <PackageReference Include="fo-dicom.Imaging.ImageSharp" Version="5.1.0" />
-    <PackageReference Include="HIC.DicomTypeTranslation" Version="4.0.3" />
-    <PackageReference Include="HIC.FAnsiSql" Version="3.1.0" />
-    <PackageReference Include="Lib.Harmony" Version="2.2.2" />
-    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.1.3" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
-    <PackageReference Include="NLog" Version="5.2.2" />
-    <PackageReference Include="System.IO.Abstractions" Version="19.2.29" />
-    <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
-    <PackageReference Include="Tesseract" Version="4.1.1" />
-    <PackageReference Include="YamlDotNet" Version="13.1.1" />
+    <PackageReference Include="CommandLineParser"/>
+    <PackageReference Include="CsvHelper" />
+    <PackageReference Include="Equ"/>
+    <PackageReference Include="fo-dicom.Imaging.ImageSharp"/>
+    <PackageReference Include="HIC.DicomTypeTranslation"/>
+    <PackageReference Include="HIC.FAnsiSql"/>
+    <PackageReference Include="Lib.Harmony"/>
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory"/>
+    <PackageReference Include="NLog"/>
+    <PackageReference Include="System.IO.Abstractions" />
+    <PackageReference Include="System.IO.FileSystem"/>
+    <PackageReference Include="Tesseract"/>
+    <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 </Project>

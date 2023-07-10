@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <AssemblyName>ii</AssemblyName>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <PublishSingleFile>true</PublishSingleFile>
-    <DebugType>embedded</DebugType>
+    <IsPublishable>true</IsPublishable>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="ExampleReport.csv" />
     <None Remove="theme.yaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\..\SharedAssemblyInfo.cs" Link="SharedAssemblyInfo.cs" />
-  </ItemGroup>
+  </ItemGroup>  
   <ItemGroup>
     <Content Include="ExampleReport.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -23,8 +19,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="7.0.0" />
-    <PackageReference Include="Terminal.Gui" Version="1.12.1" />
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing"/>
+    <PackageReference Include="Terminal.Gui"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\IsIdentifiable\IsIdentifiable.csproj" />

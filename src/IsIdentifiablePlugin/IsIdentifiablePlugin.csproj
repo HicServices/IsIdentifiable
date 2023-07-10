@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>IsIdentifiablePlugin</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="HIC.RDMP.Plugin" Version="8.0.7" />
+    <PackageReference Include="HIC.RDMP.Plugin"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\IsIdentifiable\IsIdentifiable.csproj" />
