@@ -1,4 +1,4 @@
-﻿using FAnsi;
+using FAnsi;
 using FAnsi.Discovery;
 using FAnsi.Discovery.Constraints;
 using FAnsi.Implementation;
