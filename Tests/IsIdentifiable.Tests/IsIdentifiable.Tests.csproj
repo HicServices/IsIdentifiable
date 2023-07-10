@@ -31,8 +31,6 @@
         <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="19.2.29" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\src\ii\ii.csproj" />
-        <!-- TODO(rkm 2023-07-10) Remove and move tests to ii.Tests -->
         <ProjectReference Include="..\..\src\IsIdentifiable\IsIdentifiable.csproj" />
     </ItemGroup>
     <ItemGroup>

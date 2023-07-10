@@ -1,4 +1,4 @@
-﻿using ii;
+using ii;
 using NUnit.Framework;
 using Terminal.Gui;
 using YamlDotNet.Serialization;
@@ -30,6 +30,5 @@ class TerminalGuiThemeTests
         Assert.AreEqual(default(Color), theme.Base.FocusBackground);
         Assert.AreEqual(default(Color), theme.Base.HotNormalBackground);
         Assert.AreEqual(default(Color), theme.Base.HotNormalForeground);
-
     }
 }
