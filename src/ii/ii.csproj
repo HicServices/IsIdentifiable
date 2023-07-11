@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <AssemblyName>ii</AssemblyName>
-    <OutputType>Exe</OutputType>
-    <PublishSingleFile>true</PublishSingleFile>
-    <IsPublishable>true</IsPublishable>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="ExampleReport.csv" />
-    <None Remove="theme.yaml" />
-  </ItemGroup>  
-  <ItemGroup>
-    <Content Include="ExampleReport.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="theme.yaml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing"/>
-    <PackageReference Include="Terminal.Gui"/>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\IsIdentifiable\IsIdentifiable.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="NLog.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+    <PropertyGroup>
+        <AssemblyName>ii</AssemblyName>
+        <OutputType>Exe</OutputType>
+        <PublishSingleFile>true</PublishSingleFile>
+        <IsPublishable>true</IsPublishable>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Remove="ExampleReport.csv" />
+        <None Remove="theme.yaml" />
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="ExampleReport.csv">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="theme.yaml">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
+        <PackageReference Include="Terminal.Gui" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\IsIdentifiable\IsIdentifiable.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Update="NLog.config">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>

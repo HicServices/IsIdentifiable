@@ -1,7 +1,7 @@
 using System;
 using Terminal.Gui;
 
-namespace ii.Views;
+namespace ii.Review.Views;
 
 internal class SpinnerView : View
 {

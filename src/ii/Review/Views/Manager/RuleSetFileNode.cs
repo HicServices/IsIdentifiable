@@ -3,7 +3,7 @@ using System;
 using System.IO.Abstractions;
 using YamlDotNet.Serialization;
 
-namespace ii.Views.Manager;
+namespace ii.Review.Views.Manager;
 
 internal class RuleSetFileNode
 {

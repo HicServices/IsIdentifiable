@@ -3,7 +3,7 @@ using IsIdentifiable.Rules;
 using System.Collections.Generic;
 using Terminal.Gui.Trees;
 
-namespace ii.Views;
+namespace ii.Review.Views;
 
 internal class CollidingRulesNode : TreeNode
 {

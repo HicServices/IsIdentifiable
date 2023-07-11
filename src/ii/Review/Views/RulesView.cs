@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Terminal.Gui;
 using Terminal.Gui.Trees;
 
-namespace ii.Views;
+namespace ii.Review.Views;
 
 class RulesView : View
 {

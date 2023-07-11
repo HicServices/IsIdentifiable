@@ -1,7 +1,7 @@
 ﻿using IsIdentifiable.Failures;
 using Terminal.Gui.Trees;
 
-namespace ii.Views;
+namespace ii.Review.Views;
 
 internal class OutstandingFailureNode : TreeNode
 {

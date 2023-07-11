@@ -3,7 +3,7 @@ using System;
 using System.IO.Abstractions;
 using YamlDotNet.Serialization;
 
-namespace ii;
+namespace ii.Options;
 
 internal class IiYamlOptions
 {

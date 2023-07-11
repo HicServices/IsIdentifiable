@@ -1,5 +1,5 @@
-using ii.Views;
-using ii.Views.Manager;
+using ii.Review.Views;
+using ii.Review.Views.Manager;
 using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
 using IsIdentifiable.Redacting;
@@ -14,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Terminal.Gui;
 
-namespace ii;
+namespace ii.Review;
 
 internal class MainWindow : IRulePatternFactory, IDisposable
 {
@@ -517,11 +517,11 @@ G - creates a regex pattern that matches only the failing part(s)
 
         using var dlg = new Dialog(title, Math.Min(Console.WindowWidth, Constants.DlgWidth), Constants.DlgHeight);
 
-        var line = Constants.DlgHeight - (Constants.DlgBoundary) * 2 - 2;
+        var line = Constants.DlgHeight - Constants.DlgBoundary * 2 - 2;
 
         if (!string.IsNullOrWhiteSpace(message))
         {
-            var width = Math.Min(Console.WindowWidth, Constants.DlgWidth) - (Constants.DlgBoundary * 2);
+            var width = Math.Min(Console.WindowWidth, Constants.DlgWidth) - Constants.DlgBoundary * 2;
 
             var msg = Helpers.Wrap(message, width - 1).TrimEnd();
 

@@ -1,4 +1,5 @@
 using CommandLine;
+using ii.Options;
 using ii.Redact;
 using ii.Review;
 using ii.Scan;

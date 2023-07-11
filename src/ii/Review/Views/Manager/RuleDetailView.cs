@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using Terminal.Gui;
 
-namespace ii.Views.Manager;
+namespace ii.Review.Views.Manager;
 
 class RuleDetailView : View
 {

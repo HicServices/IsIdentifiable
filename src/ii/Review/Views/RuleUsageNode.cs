@@ -2,7 +2,7 @@ using IsIdentifiable.Redacting;
 using IsIdentifiable.Rules;
 using Terminal.Gui.Trees;
 
-namespace ii.Views;
+namespace ii.Review.Views;
 
 internal class RuleUsageNode : TreeNode
 {

@@ -1,6 +1,6 @@
 using CommandLine;
 
-namespace ii;
+namespace ii.Options;
 
 internal abstract class BaseCliVerb
 {

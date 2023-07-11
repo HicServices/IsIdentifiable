@@ -8,7 +8,7 @@ using System.Linq;
 using Terminal.Gui;
 using Terminal.Gui.Trees;
 
-namespace ii.Views.Manager;
+namespace ii.Review.Views.Manager;
 
 /// <summary>
 /// View allowing editing and viewing of all rules for both IsIdentifiable and IsIdentifiableReviewer

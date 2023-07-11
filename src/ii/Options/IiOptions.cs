@@ -2,7 +2,7 @@ using ii.Redact;
 using IsIdentifiable.Options;
 using YamlDotNet.Serialization;
 
-namespace ii;
+namespace ii.Options;
 
 internal class IiOptions : IsIdentifiableOptions
 {

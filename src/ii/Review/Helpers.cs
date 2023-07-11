@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Terminal.Gui;
 
-namespace ii;
+namespace ii.Review;
 
 public static class Helpers
 {

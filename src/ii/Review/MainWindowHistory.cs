@@ -1,6 +1,6 @@
-﻿using IsIdentifiable.Redacting;
+using IsIdentifiable.Redacting;
 
-namespace ii;
+namespace ii.Review;
 
 internal class MainWindowHistory
 {

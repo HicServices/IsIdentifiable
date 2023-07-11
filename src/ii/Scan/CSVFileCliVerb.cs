@@ -1,4 +1,5 @@
 using CommandLine;
+using ii.Options;
 
 namespace ii.Scan;
 

@@ -5,7 +5,7 @@ using System.Linq;
 using Terminal.Gui;
 using Attribute = Terminal.Gui.Attribute;
 
-namespace ii.Views;
+namespace ii.Review.Views;
 
 class FailureView : View
 {

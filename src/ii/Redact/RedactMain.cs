@@ -3,6 +3,7 @@ using FAnsi.Implementations.MicrosoftSQL;
 using FAnsi.Implementations.MySql;
 using FAnsi.Implementations.Oracle;
 using FAnsi.Implementations.PostgreSql;
+using ii.Options;
 using IsIdentifiable.Options;
 using IsIdentifiable.Redacting;
 using System;

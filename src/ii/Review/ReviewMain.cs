@@ -1,3 +1,4 @@
+using ii.Options;
 using IsIdentifiable.Options;
 using IsIdentifiable.Redacting;
 using NLog;

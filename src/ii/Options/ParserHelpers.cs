@@ -1,7 +1,7 @@
 using CommandLine;
 using System;
 
-namespace ii;
+namespace ii.Options;
 internal static class ParserHelpers
 {
     internal static Parser GetDefaultParser()

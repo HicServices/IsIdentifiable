@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Reflection;
 
-namespace ii.Views.Manager;
+namespace ii.Review.Views.Manager;
 
 internal class RuleTypeNode
 {
