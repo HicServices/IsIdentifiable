@@ -1,9 +1,9 @@
 using ii.Review.Views;
 using ii.Review.Views.Manager;
 using IsIdentifiable.Failures;
-using IsIdentifiable.Options;
 using IsIdentifiable.Redacting;
 using IsIdentifiable.Rules;
+using IsIdentifiable.Rules.Storage;
 using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
@@ -16,72 +16,54 @@ using Terminal.Gui;
 
 namespace ii.Review;
 
-internal class MainWindow : IRulePatternFactory, IDisposable
+internal class MainWindow : IDisposable
 {
-    /// <summary>
-    /// The report CSV file that is currently open
-    /// </summary>
-    public ReportReader? CurrentReport { get; set; }
-
-    /// <summary>
-    /// Generates suggested ignore rules for false positives
-    /// </summary>
-    public IgnoreRuleGenerator Ignorer { get; }
-
-    /// <summary>
-    /// Updates the database to perform redactions (when not operating in Rules Only mode)
-    /// </summary>
-    public RowUpdater Updater { get; }
-
     private readonly FailureView _valuePane;
     private readonly Label _info;
     private readonly SpinnerView _spinner;
     private readonly TextField _gotoTextField;
-    private readonly IRulePatternFactory _origUpdaterRulesFactory;
-    private readonly IRulePatternFactory _origIgnorerRulesFactory;
     private readonly Label _ignoreRuleLabel;
-    private readonly Label _updateRuleLabel;
+    private readonly Label _reportRuleLabel;
     private readonly Label _currentReportLabel;
+
+    private readonly IRegexRuleStore _ignoreActionRuleStore;
+    private readonly IRegexRuleStore _reportActionRuleStore;
 
     /// <summary>
     /// Record of new rules added (e.g. Ignore with pattern X) along with the index of the failure.  This allows undoing user decisions
     /// </summary>
-    readonly Stack<MainWindowHistory> History = new();
+    private readonly Stack<MainWindowHistory> _history = new();
 
-    readonly ColorScheme _greyOnBlack = new()
+    private readonly ColorScheme _greyOnBlack = new()
     {
         Normal = Application.Driver.MakeAttribute(Color.Black, Color.Gray),
         HotFocus = Application.Driver.MakeAttribute(Color.Black, Color.Gray),
         Disabled = Application.Driver.MakeAttribute(Color.Black, Color.Gray),
         Focus = Application.Driver.MakeAttribute(Color.Black, Color.Gray),
     };
-    private readonly MenuItem miCustomPatterns;
-    private readonly RulesView rulesView;
-    private readonly AllRulesManagerView rulesManager;
+    private readonly MenuItem _miCustomPatterns;
+    private readonly RulesView _rulesView;
+    private readonly AllRulesManagerView _rulesManager;
     private readonly IFileSystem _fileSystem;
 
     public MenuBar Menu { get; private set; }
 
     public View Body { get; private set; }
 
-    Task? taskToLoadNext;
-    private const string PatternHelp = @"x - clears currently typed pattern
-F - creates a regex pattern that matches the full input value
-G - creates a regex pattern that matches only the failing part(s)
-\d - replaces all digits with regex wildcards
-\c - replaces all characters with regex wildcards
-\d\c - replaces all digits and characters with regex wildcards";
-
+    private Task? taskToLoadNext;
     private readonly View viewMain;
 
-    public MainWindow(ResourceScannerBaseOptions? analyserOpts, IgnoreRuleGenerator ignorer, RowUpdater updater, IFileSystem fileSystem)
+    public MainWindow(
+        RegexRuleStore ignoreActionRuleStore,
+        RegexRuleStore reportActionRuleStore,
+        IFileSystem fileSystem
+    )
     {
-        _fileSystem = fileSystem;
+        _ignoreActionRuleStore = ignoreActionRuleStore;
+        _reportActionRuleStore = reportActionRuleStore;
 
-        Ignorer = ignorer;
-        Updater = updater;
-        _origUpdaterRulesFactory = updater.RulesFactory;
-        _origIgnorerRulesFactory = ignorer.RulesFactory;
+        // TODO(rkm 2023-07-11) Should be unused here
+        _fileSystem = fileSystem;
 
         Menu = new MenuBar(new MenuBarItem[] {
             new("_File (F9)", new MenuItem [] {
@@ -89,14 +71,14 @@ G - creates a regex pattern that matches only the failing part(s)
                 new("_Quit", null, static () => Application.RequestStop())
             }),
             new("_Options", new MenuItem [] {
-                miCustomPatterns = new MenuItem("_Custom Patterns",null,ToggleCustomPatterns){CheckType = MenuItemCheckStyle.Checked,Checked = false}
+                _miCustomPatterns = new MenuItem("Custom Patterns",null,ToggleCustomPatterns){CheckType = MenuItemCheckStyle.Checked,Checked = false}
             })
         });
 
 
         viewMain = new View() { Width = Dim.Fill(), Height = Dim.Fill() };
-        rulesView = new RulesView();
-        rulesManager = new AllRulesManagerView(analyserOpts, fileSystem);
+        _rulesView = new RulesView();
+        _rulesManager = new AllRulesManagerView(scannerOptions, fileSystem);
 
         _info = new Label("Info")
         {
@@ -130,12 +112,12 @@ G - creates a regex pattern that matches only the failing part(s)
         ignoreButton.Clicked += Ignore;
         frame.Add(ignoreButton);
 
-        var updateButton = new Button("Update")
+        var reportButton = new Button("Report")
         {
             X = 11
         };
-        updateButton.Clicked += Update;
-        frame.Add(updateButton);
+        reportButton.Clicked += Report;
+        frame.Add(reportButton);
 
         _gotoTextField = new TextField("1")
         {
@@ -173,15 +155,13 @@ G - creates a regex pattern that matches only the failing part(s)
         frame.Add(new Label(0, 4, "Default Patterns"));
 
         _ignoreRuleLabel = new Label() { X = 0, Y = 5, Text = "Ignore:", Width = 30, Height = 1 }; ;
-        _updateRuleLabel = new Label() { X = 0, Y = 6, Text = "Update:", Width = 30, Height = 1 }; ;
-        _currentReportLabel = new Label() { X = 0, Y = 8, Text = "Report:", Width = 30, Height = 1 };
-
         frame.Add(_ignoreRuleLabel);
-        frame.Add(_updateRuleLabel);
-        frame.Add(_currentReportLabel);
 
-        // always run rules only mode for the manual gui
-        Updater.RulesOnly = true;
+        _reportRuleLabel = new Label() { X = 0, Y = 6, Text = "Update:", Width = 30, Height = 1 }; ;
+        frame.Add(_reportRuleLabel);
+
+        _currentReportLabel = new Label() { X = 0, Y = 8, Text = "Current Report:", Width = 30, Height = 1 };
+        frame.Add(_currentReportLabel);
 
         viewMain.Add(_info);
 
@@ -211,8 +191,8 @@ G - creates a regex pattern that matches only the failing part(s)
         tabView.ApplyStyleChanges();
 
         tabView.AddTab(new TabView.Tab("Sequential", viewMain), true);
-        tabView.AddTab(new TabView.Tab("Tree View", rulesView), false);
-        tabView.AddTab(new TabView.Tab("Rules Manager", rulesManager), false);
+        tabView.AddTab(new TabView.Tab("Tree View", _rulesView), false);
+        tabView.AddTab(new TabView.Tab("Rules Manager", _rulesManager), false);
 
         tabView.SelectedTabChanged += TabView_SelectedTabChanged;
 
@@ -222,26 +202,26 @@ G - creates a regex pattern that matches only the failing part(s)
     private void TabView_SelectedTabChanged(object? sender, TabView.TabChangedEventArgs e)
     {
         // sync the rules up in case people are adding new ones using the other UIs
-        rulesManager.RebuildTree();
+        _rulesManager.RebuildTree();
     }
 
     private void ToggleCustomPatterns()
     {
-        miCustomPatterns.Checked = !miCustomPatterns.Checked;
+        _miCustomPatterns.Checked = !_miCustomPatterns.Checked;
 
-        Updater.RulesFactory = miCustomPatterns.Checked ? this : _origUpdaterRulesFactory;
-        Ignorer.RulesFactory = miCustomPatterns.Checked ? this : _origIgnorerRulesFactory;
+        Updater.RulesFactory = _miCustomPatterns.Checked ? this : _origUpdaterRulesFactory;
+        Ignorer.RulesFactory = _miCustomPatterns.Checked ? this : _origIgnorerRulesFactory;
     }
 
     private void Undo()
     {
-        if (History.Count == 0)
+        if (_history.Count == 0)
         {
-            Helpers.ShowMessage("History Empty", "Cannot undo, history is empty");
+            Helpers.ShowMessage("_history Empty", "Cannot undo, history is empty");
             return;
         }
 
-        var popped = History.Pop();
+        var popped = _history.Pop();
 
         //undo file history
         popped.OutputBase.Undo();
@@ -302,12 +282,12 @@ G - creates a regex pattern that matches only the failing part(s)
         if (f != null)
         {
             _ignoreRuleLabel.Text = $"Ignore:{_origIgnorerRulesFactory.GetPattern(Ignorer, f)}";
-            _updateRuleLabel.Text = $"Update:{_origUpdaterRulesFactory.GetPattern(Ignorer, f)}";
+            _reportRuleLabel.Text = $"Report:{_origUpdaterRulesFactory.GetPattern(Ignorer, f)}";
         }
         else
         {
             _ignoreRuleLabel.Text = "Ignore:";
-            _updateRuleLabel.Text = "Update:";
+            _reportRuleLabel.Text = "Report:";
         }
     }
 
@@ -385,7 +365,7 @@ G - creates a regex pattern that matches only the failing part(s)
         try
         {
             Ignorer.Add(_valuePane.CurrentFailure);
-            History.Push(new MainWindowHistory(CurrentReport.CurrentIndex, Ignorer));
+            _history.Push(new MainWindowHistory(CurrentReport.CurrentIndex, Ignorer));
         }
         catch (OperationCanceledException)
         {
@@ -394,7 +374,8 @@ G - creates a regex pattern that matches only the failing part(s)
         }
         BeginNext();
     }
-    private void Update()
+
+    private void Report()
     {
         if (_valuePane.CurrentFailure == null || CurrentReport == null)
             return;
@@ -407,10 +388,10 @@ G - creates a regex pattern that matches only the failing part(s)
 
         try
         {
-            // TODO(rkm 2021-04-09) Server always passed as null here, but Update seems to require it?
+            // TODO(rkm 2021-04-09) Server always passed as null here, but Report seems to require it?
             Updater.Update(null!, _valuePane.CurrentFailure, null! /*create one yourself*/);
 
-            History.Push(new MainWindowHistory(CurrentReport.CurrentIndex, Updater));
+            _history.Push(new MainWindowHistory(CurrentReport.CurrentIndex, Updater));
         }
         catch (OperationCanceledException)
         {
@@ -484,7 +465,7 @@ G - creates a regex pattern that matches only the failing part(s)
                 SetupToShow(CurrentReport.Failures.FirstOrDefault());
                 BeginNext();
 
-                rulesView.LoadReport(CurrentReport, Ignorer, Updater, _origIgnorerRulesFactory);
+                _rulesView.LoadReport(CurrentReport, Ignorer, Updater, _origIgnorerRulesFactory);
             }
             catch (Exception e)
             {
@@ -513,6 +494,13 @@ G - creates a regex pattern that matches only the failing part(s)
     private static bool GetText(string title, string message, string initialValue, out string chosen,
         Dictionary<string, string> buttons)
     {
+        const string HELP_PATTERN_TEXT = @"x - clears currently typed pattern
+F - creates a regex pattern that matches the full input value
+G - creates a regex pattern that matches only the failing part(s)
+\d - replaces all digits with regex wildcards
+\c - replaces all characters with regex wildcards
+\d\c - replaces all digits and characters with regex wildcards";
+
         var optionChosen = false;
 
         using var dlg = new Dialog(title, Math.Min(Console.WindowWidth, Constants.DlgWidth), Constants.DlgHeight);
@@ -587,7 +575,7 @@ G - creates a regex pattern that matches only the failing part(s)
 
         btnHelp.Clicked += () =>
         {
-            MessageBox.Query("Pattern Help", PatternHelp, "Ok");
+            MessageBox.Query("Pattern Help", HELP_PATTERN_TEXT, "Ok");
         };
         dlg.Add(btnHelp);
 
@@ -625,8 +613,8 @@ G - creates a regex pattern that matches only the failing part(s)
             { "F", _origIgnorerRulesFactory.GetPattern(sender, failure) },
             { "G", _origUpdaterRulesFactory.GetPattern(sender, failure) },
 
-            { @"\d", new SymbolsRulesFactory { Mode = SymbolsRuleFactoryMode.DigitsOnly }.GetPattern(sender, failure) },
-            { @"\c", new SymbolsRulesFactory { Mode = SymbolsRuleFactoryMode.CharactersOnly }.GetPattern(sender, failure) },
+            { @"\d", new SymbolsRulesFactory { Mode = SymbolsRuleMode.DigitsOnly }.GetPattern(sender, failure) },
+            { @"\c", new SymbolsRulesFactory { Mode = SymbolsRuleMode.CharactersOnly }.GetPattern(sender, failure) },
             { @"\d\c", new SymbolsRulesFactory().GetPattern(sender, failure) }
         };
 
@@ -670,10 +658,10 @@ G - creates a regex pattern that matches only the failing part(s)
         _spinner.Dispose();
         _gotoTextField.Dispose();
         _ignoreRuleLabel.Dispose();
-        _updateRuleLabel.Dispose();
+        _reportRuleLabel.Dispose();
         _currentReportLabel.Dispose();
-        rulesView.Dispose();
-        rulesManager.Dispose();
+        _rulesView.Dispose();
+        _rulesManager.Dispose();
         taskToLoadNext?.Dispose();
         viewMain.Dispose();
         Menu.Dispose();

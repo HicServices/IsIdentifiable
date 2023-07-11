@@ -34,7 +34,7 @@ internal class RuleSetFileNode
         {
             _ruleSet = RuleSet.LoadFrom(File);
         }
-        catch (Exception _)
+        catch (Exception)
         {
             _ruleSet = new RuleSet();
         }
@@ -44,6 +44,8 @@ internal class RuleSetFileNode
 
     public void Save(IFileInfo? toFile = null)
     {
+        // TODO(rkm 2023-07-11) Refactor using RuleStore
+
         if (_ruleSet == null)
             throw new Exception("Cannot save before children have been created, expected GetRuleSet() to have been called before now");
 

@@ -15,14 +15,17 @@ namespace ii.Review.Views.Manager;
 /// </summary>
 class AllRulesManagerView : View, ITreeBuilder<object>
 {
-    private const string Analyser = "Analyser Rules";
-    private const string Reviewer = "Reviewer Rules";
+    private const string SCANNER_RULES = "Scanner Rules";
+    private const string REVIEWER_RULES = "Reviewer Rules";
     private readonly ResourceScannerBaseOptions? _analyserOpts;
     private readonly RuleDetailView _detailView;
     private readonly TreeView<object> _treeView;
     private readonly IFileSystem _fileSystem;
 
-    public AllRulesManagerView(ResourceScannerBaseOptions? analyserOpts, IFileSystem fileSystem)
+    public AllRulesManagerView(
+        ResourceScannerBaseOptions? analyserOpts,
+        IFileSystem fileSystem
+    )
     {
         _fileSystem = fileSystem;
 
@@ -37,8 +40,8 @@ class AllRulesManagerView : View, ITreeBuilder<object>
             Width = Dim.Percent(50),
             Height = Dim.Fill()
         };
-        _treeView.AddObject(Analyser);
-        _treeView.AddObject(Reviewer);
+        _treeView.AddObject(SCANNER_RULES);
+        _treeView.AddObject(REVIEWER_RULES);
         base.Add(_treeView);
 
         _detailView = new RuleDetailView()
@@ -186,7 +189,7 @@ class AllRulesManagerView : View, ITreeBuilder<object>
 
     private IEnumerable<object> GetChildrenImpl(object forObject)
     {
-        if (ReferenceEquals(forObject, Analyser))
+        if (ReferenceEquals(forObject, SCANNER_RULES))
         {
             if (!string.IsNullOrWhiteSpace(_analyserOpts?.RulesDirectory))
             {

@@ -196,7 +196,7 @@ class RulesView : View
         if (Ignorer == null || Updater == null)
             return;
 
-        var answer = MessageBox.Query("Delete Rules", "Which colliding rule do you want to delete?", "Ignore", "Update", "Both", "Cancel");
+        var answer = MessageBox.Query("Delete Rules", "Which colliding rule do you want to delete?", "Ignore", "Report", "Both", "Cancel");
 
         if (answer == 0 || answer == 2)
         {
@@ -241,7 +241,7 @@ class RulesView : View
             Application.RequestStop();
         };
 
-        using var update = new Button("Update");
+        using var update = new Button("Report");
         update.Clicked += () =>
         {
             try
@@ -355,7 +355,7 @@ class RulesView : View
 
         var colliding = new TreeNodeWithCount("Colliding Rules");
         var ignore = new TreeNodeWithCount("Ignore Rules Used");
-        var update = new TreeNodeWithCount("Update Rules Used");
+        var update = new TreeNodeWithCount("Report Rules Used");
         var outstanding = new TreeNodeWithCount("Outstanding Failures");
 
         var allRules = Ignorer.Rules.Union(Updater.Rules).ToList();
@@ -496,7 +496,7 @@ class RulesView : View
         SetProgress(progress, textProgress, done, max);
 
 
-        stage.Text = "Evaluating Update Rules Used";
+        stage.Text = "Evaluating Report Rules Used";
         var updateRulesUsed = rulesUsed.Where(r => r.Key.Action == RuleAction.Report).ToList();
         max = updateRulesUsed.Count;
         done = 0;

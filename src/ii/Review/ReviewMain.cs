@@ -25,17 +25,17 @@ internal static class ReviewMain
             return 1;
 
         var allOptions = YamlOptionsExtensions.Load<IiOptions>(fileSystem.FileInfo.New(cliOptions.YamlConfigPath));
-        var options = allOptions?.ReviewerOptions ??
+        var reviewerOptions = allOptions?.ReviewerOptions ??
             throw new ArgumentException($"Yaml file did not contain a {typeof(ReviewerOptions)} key", nameof(cliOptions));
 
         Application.UseSystemConsole = cliOptions.UseSystemConsole;
 
-        if (fileSystem.File.Exists(options.ThemeFile))
+        if (fileSystem.File.Exists(reviewerOptions.ThemeFile))
         {
             TerminalGuiTheme? theme;
             try
             {
-                var themeText = fileSystem.File.ReadAllText(options.ThemeFile);
+                var themeText = fileSystem.File.ReadAllText(reviewerOptions.ThemeFile);
                 theme = new Deserializer().Deserialize<TerminalGuiTheme>(themeText);
             }
             catch (Exception ex)

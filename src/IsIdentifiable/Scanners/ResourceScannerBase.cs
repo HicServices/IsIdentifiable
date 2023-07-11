@@ -48,7 +48,7 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
     private readonly HashSet<string>? _allowList;
 
     // TODO(rkm 2023-07-03) Refactor into SortedList
-    private List<IAppliableRule> _customRules = new();
+    private List<IAppliableRule> _rules = new();
 
     private readonly List<IAppliableRule> _customAllowListRules = new();
     private readonly ConcurrentDictionary<string, MemoryCache> _caches = new();
@@ -106,7 +106,7 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
             throw new Exception($"Exactly one of RulesFile or RulesDirectory must be specified");
         }
 
-        _customRules = _customRules.OrderByDescending(OrderWeight).ToList();
+        _rules = _rules.OrderByDescending(OrderWeight).ToList();
 
         // TODO(rkm 2023-07-03) Inject this via constructor
         IAllowListSource? source = null;
@@ -144,14 +144,14 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
     }
 
     /// <summary>
-    /// Sorts <see cref="_customRules"/> according to their action.  This ensures that
+    /// Sorts <see cref="_rules"/> according to their action.  This ensures that
     /// <see cref="RuleAction.Ignore"/> rules operate before <see cref="RuleAction.Report"/>
     /// preventing conflicting rules.
     /// </summary>
     public void SortRules()
     {
         // TODO(rkm 2023-06-30) Change to sorted list?
-        _customRules = _customRules.OrderByDescending(OrderWeight).ToList();
+        _rules = _rules.OrderByDescending(OrderWeight).ToList();
     }
 
     private int OrderWeight(IAppliableRule arg)
@@ -179,7 +179,7 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
 
     /// <summary>
     /// Deserializes the given <paramref name="yaml"/> into a collection of <see cref="RegexRule"/>
-    /// which are added to <see cref="_customRules"/>
+    /// which are added to <see cref="_rules"/>
     /// </summary>
     /// <param name="yaml"></param>
     /// <returns>True if the yaml read was deserialized into a <see cref="RuleSet"/> with at least 1 rule</returns>
@@ -192,19 +192,19 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
 
         if (ruleSet.BasicRules != null)
         {
-            _customRules.AddRange(ruleSet.BasicRules);
+            _rules.AddRange(ruleSet.BasicRules);
             foundRules = true;
         }
 
         if (ruleSet.SocketRules != null)
         {
-            _customRules.AddRange(ruleSet.SocketRules);
+            _rules.AddRange(ruleSet.SocketRules);
             foundRules = true;
         }
 
         if (ruleSet.ConsensusRules != null)
         {
-            _customRules.AddRange(ruleSet.ConsensusRules);
+            _rules.AddRange(ruleSet.ConsensusRules);
             foundRules = true;
         }
 
@@ -221,7 +221,7 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
     // TODO(rkm 2023-07-10) Temporary - refactor out later
     public void AddCustomRule(IRegexRule rule)
     {
-        _customRules.Add(rule);
+        _rules.Add(rule);
     }
 
     /// <summary>
@@ -279,7 +279,7 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
             yield break;
 
         //for each custom rule
-        foreach (var rule in _customRules)
+        foreach (var rule in _rules)
         {
             var ruleAction = rule.Apply(fieldName, fieldValue, out var parts);
             switch (ruleAction)
@@ -370,7 +370,7 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
         DisposeImpl();
 
         GC.SuppressFinalize(this);
-        foreach (var d in _customRules.OfType<IDisposable>())
+        foreach (var d in _rules.OfType<IDisposable>())
             d.Dispose();
 
         Logger?.Info($"Total runtime for {GetType().Name}:{_lifetime.Elapsed}");
