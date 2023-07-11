@@ -52,9 +52,9 @@ public class ReportReader
     /// <param name="loadedRows"></param>
     /// <param name="token"></param>
     /// <param name="fileSystem"></param>
-    public ReportReader(IFileInfo csvFile, Action<int> loadedRows, IFileSystem fileSystem, CancellationToken token)
+    public ReportReader(IFileInfo csvFile, Action<int> loadedRows, CancellationToken token)
     {
-        var report = new FailureStoreReport("", 0, fileSystem);
+        var report = new FailureStoreReport("", 0, csvFile.FileSystem);
         Failures = FailureStoreReport.Deserialize(csvFile, loadedRows, token).ToArray();
     }
 

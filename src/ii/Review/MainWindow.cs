@@ -480,7 +480,7 @@ G - creates a regex pattern that matches only the failing part(s)
             try
             {
                 CurrentReport = new ReportReader(_fileSystem.FileInfo.New(path), (s) =>
-                    rows.Text = $"Loaded: {s:N0} rows", _fileSystem, cts.Token);
+                    rows.Text = $"Loaded: {s:N0} rows", cts.Token);
                 SetupToShow(CurrentReport.Failures.FirstOrDefault());
                 BeginNext();
 

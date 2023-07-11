@@ -36,7 +36,7 @@ internal class PixelDataReportTests
     [Test]
     public void TestReportReader_PixelReport()
     {
-        var reader = new ReportReader(_fileSystem.FileInfo.New(_pixelDataReportPath), (s) => { }, _fileSystem, CancellationToken.None);
+        var reader = new ReportReader(_fileSystem.FileInfo.New(_pixelDataReportPath), (s) => { }, CancellationToken.None);
         Assert.IsNotEmpty(reader.Failures);
     }
 
@@ -44,7 +44,7 @@ internal class PixelDataReportTests
     [Test]
     public void MatchProblemValuesPatternFactory_PixelReport()
     {
-        var reader = new ReportReader(_fileSystem.FileInfo.New(_pixelDataReportPath), (s) => { }, _fileSystem, CancellationToken.None);
+        var reader = new ReportReader(_fileSystem.FileInfo.New(_pixelDataReportPath), (s) => { }, CancellationToken.None);
 
         foreach (var l in reader.Failures)
         {
