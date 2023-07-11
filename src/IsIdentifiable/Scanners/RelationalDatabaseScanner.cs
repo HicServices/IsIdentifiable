@@ -2,6 +2,7 @@ using FAnsi.Discovery;
 using FAnsi.Discovery.QuerySyntax;
 using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
+using IsIdentifiable.Reporting.Reports;
 using IsIdentifiable.Util;
 using System;
 using System.Data;
@@ -33,9 +34,10 @@ public class RelationalDatabaseScanner : ResourceScannerBase
         RelationalDatabaseScannerOptions options,
         DatabaseTargetOptions databaseTargetOptions,
         IFileSystem fileSystem,
-        int stopAfter = 0
+        int stopAfter,
+        params IFailureReport[] reports
     )
-        : base(options, fileSystem)
+        : base(options, fileSystem, reports)
     {
         _database = DatabaseTargetHelpers.GetDiscoveredDatabase(databaseTargetOptions);
         _dbConnection = _database.Server.GetConnection();

@@ -1,4 +1,5 @@
 using IsIdentifiable.Failures;
+using IsIdentifiable.Reporting.Reports;
 using IsIdentifiable.Scanners;
 using System;
 using System.Data;
@@ -9,9 +10,15 @@ namespace IsIdentifiablePlugin;
 
 class RDMPPipelineScanner : ResourceScannerBase
 {
-    public RDMPPipelineScanner(RDMPPipelineScannerOptions options, IFileSystem fileSystem)
-        : base(options, fileSystem)
-    { }
+    public RDMPPipelineScanner(
+        RDMPPipelineScannerOptions options,
+        IFileSystem fileSystem,
+        params IFailureReport[] reports
+    )
+        : base(options, fileSystem, reports)
+    {
+
+    }
 
     public void Scan(DataTable dt)
     {

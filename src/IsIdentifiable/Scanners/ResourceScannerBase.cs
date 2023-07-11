@@ -64,8 +64,9 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
         params IFailureReport[] reports
     )
     {
-        if (!_reports.Any())
+        if (!reports.Any())
             throw new Exception("At least one report must be specified");
+        _reports.AddRange(reports);
 
         Logger = LogManager.GetLogger(GetType().Name);
         FileSystem = fileSystem;

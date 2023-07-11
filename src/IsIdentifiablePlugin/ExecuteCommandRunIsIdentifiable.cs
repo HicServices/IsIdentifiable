@@ -59,7 +59,7 @@ public class ExecuteCommandRunIsIdentifiable : BasicCommandExecution
             DatabaseType = server.DatabaseType,
         };
 
-        using var runner = new RelationalDatabaseScanner(relationalDatabaseScannerOptions, databaseTargetOptions, new FileSystem());
+        using var runner = new RelationalDatabaseScanner(relationalDatabaseScannerOptions, databaseTargetOptions, new FileSystem(), stopAfter: 0);
         using var cts = new CancellationTokenSource();
 
         BasicActivator.Wait("Evaluating Table", Task.Run(() =>

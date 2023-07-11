@@ -1,5 +1,6 @@
 using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
+using IsIdentifiable.Reporting.Reports;
 using IsIdentifiable.Scanners;
 using NUnit.Framework;
 using System.Collections.Generic;
@@ -27,9 +28,10 @@ public class ResourceScannerBaseTests
         public TestScanner(
             TestScannerBaseOptions options,
             MockFileSystem fileSystem,
-            string fieldToTest = "field"
+            string fieldToTest = "field",
+            params IFailureReport[] reports
         )
-            : base(options, fileSystem)
+            : base(options, fileSystem, reports)
         {
             _fieldToTest = fieldToTest;
         }
