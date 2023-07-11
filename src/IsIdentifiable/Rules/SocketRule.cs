@@ -87,7 +87,7 @@ public class SocketRule : IAppliableRule, IDisposable
     }
 
     /// <summary>
-    /// Parses the socket <paramref name="responseData"/> recieved from the remote <see cref="Host"/>
+    /// Parses the socket <paramref name="responseData"/> received from the remote <see cref="Host"/>
     /// classification service into zero or more <see cref="FailurePart"/>
     /// </summary>
     /// <param name="responseData"></param>

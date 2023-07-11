@@ -5,7 +5,7 @@ namespace IsIdentifiable.Reporting.Destinations;
 
 /// <summary>
 /// Abstract implementation of <see cref="IReportDestination"/>.  When implemented
-/// in a derrived class allows persistence of IsIdentifiable reports (e.g. to a
+/// in a derived class allows persistence of IsIdentifiable reports (e.g. to a
 /// CSV file or database table).
 /// </summary>
 public abstract class ReportDestination : IReportDestination

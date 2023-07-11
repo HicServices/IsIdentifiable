@@ -8,7 +8,7 @@ using System.Text;
 namespace IsIdentifiable.Failures;
 
 /// <summary>
-/// Describes all failing <see cref="Parts"/> of a single cell of data being evaluted
+/// Describes all failing <see cref="Parts"/> of a single cell of data being evaluated
 /// along with the <see cref="ResourcePrimaryKey"/> (if any) so that the row on which
 /// the data was found can located (e.g. to perform  redaction).
 /// </summary>

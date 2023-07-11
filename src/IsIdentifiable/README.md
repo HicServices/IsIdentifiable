@@ -67,7 +67,7 @@ python3 ./ner_daemon_spacy.py -d en_core_web_md
 ```
 
 After the download completes you can start the NLP by without `-d`. By default this process will block the console
-but you can start the process detatched with the `&` operator:
+but you can start the process detached with the `&` operator:
 
 ```
 python3 ./ner_daemon_spacy.py &
@@ -93,7 +93,7 @@ Start the service with:
 ./nerd
 ```
 
-_Add & at the end to detatch the console (prevents blocking)_
+_Add & at the end to detach the console (prevents blocking)_
 
 This classifier listens on port `1881`
 

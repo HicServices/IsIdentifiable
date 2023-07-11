@@ -25,7 +25,7 @@ internal class CSVFileCliVerb : BaseCliVerb
         's',
         "stop-after",
         Default = default(int),
-        HelpText = "Set to stop processing after x records e.g., only evalute top 1000 records of a table/file"
+        HelpText = "Set to stop processing after x records e.g., only evaluate top 1000 records of a table/file"
     )]
     public int StopAfter { get => _stopAfter; }
 

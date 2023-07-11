@@ -52,6 +52,6 @@ public class RuleSet
         builder.WithTagMapping("!RegexRule", typeof(RegexRule));
         var deserializer = builder.Build();
 
-        return deserializer.Deserialize<RuleSet>(yamlContent) ?? throw new ArgumentException($"Specififed file did not contain any rules");
+        return deserializer.Deserialize<RuleSet>(yamlContent) ?? throw new ArgumentException($"Specified file did not contain any rules");
     }
 }

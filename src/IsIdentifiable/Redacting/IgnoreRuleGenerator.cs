@@ -53,7 +53,7 @@ public class IgnoreRuleGenerator : OutBase
     /// <returns>true if it is novel</returns>
     public bool OnLoad(Failure failure, out RegexRule existingRule)
     {
-        //get user ot make a decision only if it is NOT covered by an existing rule
+        //get user to make a decision only if it is NOT covered by an existing rule
         return !IsCoveredByExistingRule(failure, out existingRule);
     }
 }

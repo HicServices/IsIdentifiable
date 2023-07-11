@@ -5,7 +5,7 @@ namespace IsIdentifiable.AllowLists;
 
 /// <summary>
 /// Interface for classes that produce a list of values which when
-/// detected as 'identifiable information' should infact instead
+/// detected as 'identifiable information' should in fact instead
 /// be ignored.
 /// </summary>
 public interface IAllowListSource : IDisposable
