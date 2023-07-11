@@ -215,7 +215,7 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
         }
 
         if (!foundRules)
-            throw new ArgumentException($"Specififed file did not contain any rules");
+            throw new ArgumentException($"Specified file did not contain any rules");
     }
 
     // TODO(rkm 2023-07-10) Temporary - refactor out later

@@ -1,4 +1,4 @@
-﻿using IsIdentifiable.Failures;
+using IsIdentifiable.Failures;
 using IsIdentifiable.Redacting;
 using NUnit.Framework;
 using System;
@@ -65,7 +65,7 @@ internal class PixelDataReportTests
     {
         var f = GetPixelFailure(out var ocrOutput);
         var g = new RowUpdater(_fileSystem);
-        Assert.AreEqual($"^{Regex.Escape(ocrOutput)}$", g.RulesFactory.GetPattern(this, f), "When the user markes problematic the OCR data the pattern should exactly match the full text discovered");
+        Assert.AreEqual($"^{Regex.Escape(ocrOutput)}$", g.RulesFactory.GetPattern(this, f), "When the user marks problematic the OCR data the pattern should exactly match the full text discovered");
     }
 
     [TestCase(typeof(SymbolsRulesFactory))]
