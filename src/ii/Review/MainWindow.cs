@@ -286,7 +286,7 @@ G - creates a regex pattern that matches only the failing part(s)
         {
             CurrentReport.GoTo(page);
             _info.Text = CurrentReport.DescribeProgress();
-            SetupToShow(CurrentReport.Current);
+            SetupToShow(CurrentReport.CurrentFailure);
         }
         catch (Exception e)
         {
@@ -330,7 +330,7 @@ G - creates a regex pattern that matches only the failing part(s)
         {
             while (CurrentReport.Next())
             {
-                var next = CurrentReport.Current;
+                var next = CurrentReport.CurrentFailure;
 
                 //prefer rules that say we should update the database with redacted over rules that say we should ignore the problem
                 if (!Updater.OnLoad(null, next, out _))

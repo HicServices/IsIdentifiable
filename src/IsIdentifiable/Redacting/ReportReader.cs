@@ -29,7 +29,7 @@ public class ReportReader
     /// <summary>
     /// The <see cref="CurrentIndex"/> of <see cref="Failures"/> or null
     /// </summary>
-    public Failure? Current => _current < Failures.Length ? Failures[_current] : null;
+    public Failure? CurrentFailure => _current < Failures.Length ? Failures[_current] : null;
 
     /// <summary>
     /// True if <see cref="CurrentIndex"/> is after the end of the <see cref="Failures"/>
@@ -61,7 +61,7 @@ public class ReportReader
     /// <summary>
     /// Advances <see cref="CurrentIndex"/> along 1
     /// </summary>
-    /// <returns>Returns true if a new <see cref="Current"/> is now available or false if it is at the end</returns>
+    /// <returns>Returns true if a new <see cref="CurrentFailure"/> is now available or false if it is at the end</returns>
     public bool Next()
     {
         _current++;

@@ -107,7 +107,7 @@ public class UnattendedReviewer
 
                 try
                 {
-                    noUpdate = _updater.OnLoad(_discoveredServer, _reportReader.Current, out updateRule);
+                    noUpdate = _updater.OnLoad(_discoveredServer, _reportReader.CurrentFailure, out updateRule);
                 }
                 catch (Exception e)
                 {
@@ -118,10 +118,10 @@ public class UnattendedReviewer
                 //is it novel for updater
                 if (noUpdate)
                     //is it novel for ignorer
-                    if (_ignorer.OnLoad(_reportReader.Current, out var ignoreRule))
+                    if (_ignorer.OnLoad(_reportReader.CurrentFailure, out var ignoreRule))
                     {
                         //we can't process it unattended
-                        storeReport.Add(_reportReader.Current);
+                        storeReport.Add(_reportReader.CurrentFailure);
                         Unresolved++;
                     }
                     else
