@@ -32,7 +32,21 @@ repos:
         exclude: |
           (?x)^(
             .pre-commit-config.yaml|
-            meta/pre-commit-config-base.yaml|
+          )$
+  - repo: https://github.com/codespell-project/codespell
+    rev: "v2.2.5"
+    hooks:
+      - id: codespell
+        args:
+          [
+            --ignore-words,
+            .meta/codespell-ignores.txt,
+            --exclude-file,
+            .meta/codespell-excludes.txt,
+          ]
+        exclude: |
+          (?x)^(
+              data/IsIdentifiableRules/BasicRules.yaml|
           )$
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v3.0.0-alpha.6
