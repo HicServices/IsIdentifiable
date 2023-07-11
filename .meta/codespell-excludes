@@ -1,0 +1,3 @@
+		InputStream stream = Program.class.getResourceAsStream("/english.all.3class.distsim.crf.ser.gz");
+										<include>stanford-ner-2018-10-16/classifiers/english.all.3class.distsim.crf.ser.gz</include>
+				<include>english.all.3class.distsim.crf.ser.gz</include>

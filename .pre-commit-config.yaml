@@ -11,6 +11,15 @@ repos:
       - id: check-merge-conflict
       - id: check-xml
       - id: check-yaml
+        name: check-yaml (no-rules)
+        exclude: |
+          (?x)^(
+            src/IsIdentifiable/Rules.yaml|
+          )$
+      - id: check-yaml
+        name: check-yaml (rules)
+        files: src/IsIdentifiable/Rules.yaml
+        args: [--unsafe]
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: mixed-line-ending
@@ -40,14 +49,15 @@ repos:
         args:
           [
             --ignore-words,
-            .meta/codespell-ignores.txt,
+            .meta/codespell-ignores,
             --exclude-file,
-            .meta/codespell-excludes.txt,
+            .meta/codespell-excludes,
           ]
         exclude: |
           (?x)^(
             tests/IsIdentifiable.Tests/pixeldatareport.csv|
             src/IsIdentifiable/Rules.yaml|
+            src/nerd-spacy/nerd-spacy.spec|
           )$
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v3.0.0-alpha.6
