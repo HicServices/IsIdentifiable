@@ -1,5 +1,6 @@
 ﻿using IsIdentifiable.Failures;
 using IsIdentifiable.Redacting;
+using IsIdentifiable.Tests.TestUtil;
 using NUnit.Framework;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;

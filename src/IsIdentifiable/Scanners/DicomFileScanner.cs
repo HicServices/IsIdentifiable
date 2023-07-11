@@ -5,6 +5,7 @@ using ImageMagick;
 using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
 using IsIdentifiable.Reporting.Reports;
+using IsIdentifiable.Util;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using System;

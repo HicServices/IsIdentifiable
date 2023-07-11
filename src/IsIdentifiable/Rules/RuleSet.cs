@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+using System.IO.Abstractions;
+using YamlDotNet.Serialization;
 
 namespace IsIdentifiable.Rules;
 
 /// <summary>
 /// A collection of rules which tell IsIdentifiable how to classify 
-/// identifiable data in strings.  Includes support for remote services
-/// (e.g. NLP) and allow lists (ignore false positives).
+/// identifiable data in strings. Includes support for remote services
+/// (e.g. NLP) and allow lists (ignore false positives)
 /// </summary>
 public class RuleSet
 {
@@ -33,4 +36,22 @@ public class RuleSet
     /// NLP classifiers and only reporting identifiable data when both agree.
     /// </summary>
     public List<ConsensusRule> ConsensusRules { get; set; } = new();
+
+    /// <summary>
+    /// Loads a <see cref="RuleSet"/> from the specified <paramref name="yamlFile"/>
+    /// </summary>
+    /// <param name="yamlFile"></param>
+    /// <returns></returns>
+    public static RuleSet LoadFrom(IFileInfo yamlFile)
+    {
+        var yamlContent = yamlFile.FileSystem.File.ReadAllText(yamlFile.FullName);
+
+        var builder = new DeserializerBuilder();
+        builder.WithTagMapping("!SocketRule", typeof(SocketRule));
+        builder.WithTagMapping("!AllowlistRule", typeof(AllowlistRule));
+        builder.WithTagMapping("!RegexRule", typeof(RegexRule));
+        var deserializer = builder.Build();
+
+        return deserializer.Deserialize<RuleSet>(yamlContent) ?? throw new ArgumentException($"Specififed file did not contain any rules");
+    }
 }

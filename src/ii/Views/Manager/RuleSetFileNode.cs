@@ -7,7 +7,7 @@ namespace ii.Views.Manager;
 
 internal class RuleSetFileNode
 {
-    public IFileInfo File { get; set; }
+    public IFileInfo File { get; init; }
 
     /// <summary>
     /// The ruleset in the <see cref="File"/>.  It is important to populate this only once
@@ -18,11 +18,11 @@ internal class RuleSetFileNode
 
     public RuleSetFileNode(IFileInfo file)
     {
-        this.File = file;
+        File = file;
     }
 
     /// <summary>
-    /// Opens the ruleset file and reads all rules.  This caches 
+    /// Opens the ruleset file and reads all rules. This caches 
     /// </summary>
     /// <returns></returns>
     public RuleSet GetRuleSet()
@@ -30,9 +30,16 @@ internal class RuleSetFileNode
         if (_ruleSet != null)
             return _ruleSet;
 
-        var yaml = System.IO.File.ReadAllText(File.FullName);
-        var deserializer = RuleHelpers.GetRuleDeserializer();
-        return _ruleSet = deserializer.Deserialize<RuleSet>(yaml) ?? new RuleSet();
+        try
+        {
+            _ruleSet = RuleSet.LoadFrom(File);
+        }
+        catch (Exception _)
+        {
+            _ruleSet = new RuleSet();
+        }
+
+        return _ruleSet;
     }
 
     public void Save(IFileInfo? toFile = null)
@@ -52,8 +59,5 @@ internal class RuleSetFileNode
         serializer.Serialize(sw, _ruleSet);
     }
 
-    public override string ToString()
-    {
-        return File.Name;
-    }
+    public override string ToString() => File.Name;
 }

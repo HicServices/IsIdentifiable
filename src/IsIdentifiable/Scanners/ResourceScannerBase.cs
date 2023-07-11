@@ -85,7 +85,7 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
             if (!fi.Exists)
                 throw new Exception($"Specified rules file does not exist: {options.RulesFile}");
 
-            LoadRules(FileSystem.File.ReadAllText(fi.FullName));
+            LoadRules(fi);
         }
         else if (!string.IsNullOrWhiteSpace(options.RulesDirectory))
         {
@@ -94,7 +94,7 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
             foreach (var fi in di.GetFiles("*.yaml"))
             {
                 Logger.Info($"Loading rules from {fi.Name}");
-                LoadRules(FileSystem.File.ReadAllText(fi.FullName));
+                LoadRules(fi);
                 loadedAtLeastOne = true;
             }
 
@@ -183,12 +183,10 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
     /// </summary>
     /// <param name="yaml"></param>
     /// <returns>True if the yaml read was deserialized into a <see cref="RuleSet"/> with at least 1 rule</returns>
-    private void LoadRules(string yaml)
+    private void LoadRules(IFileInfo yamlFile)
     {
         Logger.Info("Loading Rules Yaml");
-        Logger.Debug($"Loading Rules Yaml:{Environment.NewLine}{yaml}");
-
-        var ruleSet = RuleHelpers.GetRuleDeserializer().Deserialize<RuleSet>(yaml) ?? throw new ArgumentException($"Specififed file did not contain any rules");
+        var ruleSet = RuleSet.LoadFrom(yamlFile);
 
         var foundRules = false;
 

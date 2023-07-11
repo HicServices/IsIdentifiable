@@ -1,6 +1,7 @@
 using IsIdentifiable.Options;
 using IsIdentifiable.Reporting.Reports;
 using IsIdentifiable.Scanners;
+using IsIdentifiable.Tests.TestUtil;
 using NUnit.Framework;
 using System.IO;
 using System.Linq;

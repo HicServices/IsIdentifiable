@@ -3,6 +3,7 @@ using IsIdentifiable.Failures;
 using IsIdentifiable.Options;
 using IsIdentifiable.Reporting.Destinations;
 using IsIdentifiable.Reporting.Reports;
+using IsIdentifiable.Tests.TestUtil;
 using NUnit.Framework;
 using System;
 using System.Data;

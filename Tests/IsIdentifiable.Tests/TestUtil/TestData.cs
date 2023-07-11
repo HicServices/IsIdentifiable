@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using System.IO.Abstractions;
 
-namespace IsIdentifiable.Tests;
+namespace IsIdentifiable.Tests.TestUtil;
 
 public sealed class TestData
 {

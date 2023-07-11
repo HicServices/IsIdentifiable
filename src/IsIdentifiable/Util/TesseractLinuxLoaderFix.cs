@@ -6,7 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace IsIdentifiable;
+namespace IsIdentifiable.Util;
 
 /// <summary>
 /// Work around legacy Tesseract Interop code relying on old libdl.so
@@ -23,7 +23,7 @@ public class TesseractLinuxLoaderFix
     /// </summary>
     public static void Patch()
     {
-        if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             return; // Only apply patch on Linux
         var harmony = new Harmony("uk.ac.dundee.hic.tesseract");
         var ll = typeof(LibraryLoader);

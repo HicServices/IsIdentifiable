@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using System;
 
-namespace IsIdentifiable.Tests;
+namespace IsIdentifiable.Tests.TestUtil;
 
 public class TestHelpers
 {
