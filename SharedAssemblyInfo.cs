@@ -1,4 +1,3 @@
-﻿
 using System.Reflection;
 
 [assembly: AssemblyCompany("Universities of Dundee and Edinburgh")]

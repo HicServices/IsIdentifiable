@@ -67,4 +67,3 @@ public class IsIdentifiablePipelineComponent : IDataFlowComponent<DataTable>, IC
             throw new ArgumentException($"Yaml file did not contain a {typeof(RDMPPipelineScannerOptions)} key", nameof(YamlConfigFile));
     }
 }
-

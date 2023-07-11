@@ -37,4 +37,3 @@ internal class MongoDBCliVerb : BaseCliVerb
         _generateTreeReport = generateTreeReport;
     }
 }
-
