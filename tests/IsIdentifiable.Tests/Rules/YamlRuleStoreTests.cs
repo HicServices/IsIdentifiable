@@ -63,7 +63,7 @@ internal class YamlRuleStoreTests
         var fi = _fileSystem.FileInfo.New("t");
         var store = new YamlRuleStore(fi, _dateTimeProvider);
         var rule = new RegexRule();
-        var expected = RuleHelpers.SerializeWithComment(rule, _dateTimeProvider.UtcNow());
+        var expected = RegexRuleHelpers.SerializeWithComment(rule, _dateTimeProvider.UtcNow());
 
         // Act
 
@@ -84,9 +84,9 @@ internal class YamlRuleStoreTests
         var fi = _fileSystem.FileInfo.New("t");
         var store = new YamlRuleStore(fi, _dateTimeProvider);
         var rule1 = new RegexRule() { IfColumn = "col1" };
-        var expected1 = RuleHelpers.SerializeWithComment(rule1, _dateTimeProvider.UtcNow());
+        var expected1 = RegexRuleHelpers.SerializeWithComment(rule1, _dateTimeProvider.UtcNow());
         var rule2 = new RegexRule() { IfColumn = "col2" };
-        var expected2 = RuleHelpers.SerializeWithComment(rule2, _dateTimeProvider.UtcNow());
+        var expected2 = RegexRuleHelpers.SerializeWithComment(rule2, _dateTimeProvider.UtcNow());
 
         // Act
 
@@ -114,7 +114,7 @@ internal class YamlRuleStoreTests
         var fi = _fileSystem.FileInfo.New("t.yaml");
         using (var stream = fi.AppendText())
         {
-            stream.Write(RuleHelpers.Serialize(rule));
+            stream.Write(RegexRuleHelpers.Serialize(rule));
         }
 
         var store = new YamlRuleStore(fi, _dateTimeProvider);

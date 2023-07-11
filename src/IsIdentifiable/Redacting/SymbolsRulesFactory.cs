@@ -9,14 +9,14 @@ using System.Text.RegularExpressions;
 namespace IsIdentifiable.Redacting;
 
 /// <summary>
-/// Generates Regex patterns for matching <see cref="Failure"/> based on permutations of digits (\d) and/or characters([A-Z] or [a-z]).  See also <seealso cref="SymbolsRuleFactoryMode"/>.
+/// Generates Regex patterns for matching <see cref="Failure"/> based on permutations of digits (\d) and/or characters([A-Z] or [a-z]).  See also <seealso cref="SymbolsRuleMode"/>.
 /// </summary>
 public class SymbolsRulesFactory : IRulePatternFactory
 {
     /// <summary>
     /// Whether to generate Regex match patterns using the permutation of characters, digits or both.
     /// </summary>
-    public SymbolsRuleFactoryMode Mode { get; set; }
+    public SymbolsRuleMode Mode { get; set; }
 
     /// <summary>
     /// Returns just the failing parts expressed as digits and wrapped in capture group(s) e.g. ^(\d\d-\d\d-\d\d).*([A-Z][A-Z])
@@ -50,10 +50,10 @@ public class SymbolsRulesFactory : IRulePatternFactory
 
             foreach (var cur in p)
             {
-                if (char.IsDigit(cur) && Mode != SymbolsRuleFactoryMode.CharactersOnly)
+                if (char.IsDigit(cur) && Mode != SymbolsRuleMode.CharactersOnly)
                     sb.Append("\\d");
                 else
-                if (char.IsLetter(cur) && Mode != SymbolsRuleFactoryMode.DigitsOnly)
+                if (char.IsLetter(cur) && Mode != SymbolsRuleMode.DigitsOnly)
                     sb.Append(char.IsUpper(cur) ? "[A-Z]" : "[a-z]");
                 else
                     sb.Append(Regex.Escape(cur.ToString()));

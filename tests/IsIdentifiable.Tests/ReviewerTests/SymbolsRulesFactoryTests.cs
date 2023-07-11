@@ -9,13 +9,13 @@ namespace IsIdentifiable.Tests.ReviewerTests;
 public class SymbolsRulesFactoryTests
 {
 
-    [TestCase("MR Head 12-11-20", "12-11-20", @"(\d\d-\d\d-\d\d)$", SymbolsRuleFactoryMode.Full)]
-    [TestCase("CT Head - 12/34/56", "12/34/56", @"(\d\d/\d\d/\d\d)$", SymbolsRuleFactoryMode.Full)]
-    [TestCase("CT Head - 123-ABC-n4 fishfish", "123-ABC-n4", @"(\d\d\d-[A-Z][A-Z][A-Z]-[a-z]\d)", SymbolsRuleFactoryMode.Full)]
-    [TestCase("CT Head - 123-ABC-n4 fishfish", "123-ABC-n4", @"(123-[A-Z][A-Z][A-Z]-[a-z]4)", SymbolsRuleFactoryMode.CharactersOnly)]
-    [TestCase("CT Head - 123-ABC-n4 fishfish", "123-ABC-n4", @"(\d\d\d-ABC-n\d)", SymbolsRuleFactoryMode.DigitsOnly)]
-    [TestCase("123", "123", @"^(\d\d\d)$", SymbolsRuleFactoryMode.Full)]
-    public void TestSymbols_OnePart(string input, string part, string expectedOutput, SymbolsRuleFactoryMode mode)
+    [TestCase("MR Head 12-11-20", "12-11-20", @"(\d\d-\d\d-\d\d)$", SymbolsRuleMode.Full)]
+    [TestCase("CT Head - 12/34/56", "12/34/56", @"(\d\d/\d\d/\d\d)$", SymbolsRuleMode.Full)]
+    [TestCase("CT Head - 123-ABC-n4 fishfish", "123-ABC-n4", @"(\d\d\d-[A-Z][A-Z][A-Z]-[a-z]\d)", SymbolsRuleMode.Full)]
+    [TestCase("CT Head - 123-ABC-n4 fishfish", "123-ABC-n4", @"(123-[A-Z][A-Z][A-Z]-[a-z]4)", SymbolsRuleMode.CharactersOnly)]
+    [TestCase("CT Head - 123-ABC-n4 fishfish", "123-ABC-n4", @"(\d\d\d-ABC-n\d)", SymbolsRuleMode.DigitsOnly)]
+    [TestCase("123", "123", @"^(\d\d\d)$", SymbolsRuleMode.Full)]
+    public void TestSymbols_OnePart(string input, string part, string expectedOutput, SymbolsRuleMode mode)
     {
         var f = new SymbolsRulesFactory() { Mode = mode };
 

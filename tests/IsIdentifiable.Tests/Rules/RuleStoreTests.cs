@@ -1,29 +1,36 @@
 using IsIdentifiable.Rules;
+using IsIdentifiable.Rules.Storage;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace IsIdentifiable.Tests.Rules;
 
 internal class RuleStoreTests
 {
-    private class MockRuleStore : RuleStore
+    private class MockRuleStore : RegexRuleStore
     {
         public IRegexRule? AddedRule;
         public IRegexRule? DeletedRule;
         public IRegexRule? UndoRule;
 
-        public MockRuleStore(IList<IRegexRule>? rules = null)
+        public MockRuleStore(
+            IRegexRuleGenerator ruleGenerator,
+            bool isReadOnly
+        )
+            : base(ruleGenerator, isReadOnly)
         {
-            if (rules == null)
-                return;
-            Rules.AddRange(rules);
+            throw new NotImplementedException();
         }
 
         protected override void AddImpl(IRegexRule rule) => AddedRule = rule;
-        protected override void DeleteImpl(IRegexRule rule) => DeletedRule = rule;
+        protected override void RemoveImpl(IRegexRule rule) => DeletedRule = rule;
         protected override void UndoImpl(IRegexRule rule) => UndoRule = rule;
+
+        protected override void ClearImpl()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [Test]

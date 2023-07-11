@@ -40,4 +40,11 @@ public interface IRegexRule : IAppliableRule
     /// <param name="requireIdenticalAction">True (default) if identical must also include the same <see cref="Action"/> for values matching the rule</param>
     /// <returns></returns>
     bool AreIdentical(IRegexRule other, bool requireIdenticalAction = true);
+
+    /// <summary>
+    /// Test whether the rule generates a <see cref="RuleAction"/> for the given <paramref name="failure"/>
+    /// </summary>
+    /// <param name="failure"></param>
+    /// <returns></returns>
+    bool Covers(Failure failure);
 }

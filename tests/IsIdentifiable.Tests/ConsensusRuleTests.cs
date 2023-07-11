@@ -81,7 +81,7 @@ class ConsensusRuleTests
     //      Port: 567";
 
 
-    //    var deserializer = RuleHelpers.GetRuleDeserializer();
+    //    var deserializer = RegexRuleHelpers.GetRuleDeserializer();
     //    var ruleSet = deserializer.Deserialize<RuleSet>(yaml);
 
     //    Assert.IsInstanceOf(typeof(ConsensusRule), ruleSet.ConsensusRules.Single());

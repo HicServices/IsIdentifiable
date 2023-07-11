@@ -123,7 +123,7 @@ public abstract class OutBase
 
         Rules.Add(rule);
 
-        var contents = RuleHelpers.SerializeWithComment(rule, DateTime.Now);
+        var contents = RegexRuleHelpers.SerializeWithComment(rule, DateTime.Now);
 
         FileSystem.File.AppendAllText(RulesFile.FullName, contents);
         History.Push(new OutBaseHistory(rule, contents));
@@ -143,7 +143,7 @@ public abstract class OutBase
         if (!removed)
             return false;
 
-        var ruleYaml = RuleHelpers.Serialize(rule);
+        var ruleYaml = RegexRuleHelpers.Serialize(rule);
         return Purge(ruleYaml, $"# Rule deleted by {Environment.UserName} - {DateTime.Now}{Environment.NewLine}");
     }
 

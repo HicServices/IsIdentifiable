@@ -128,4 +128,7 @@ public class RegexRule : MemberwiseEquatable<RegexRule>, IRegexRule
             (!requireIdenticalAction || Action == other.Action) &&
             string.Equals(IfPattern, other.IfPattern, StringComparison.CurrentCultureIgnoreCase);
     }
+
+    /// <inheritdoc/>
+    public bool Covers(Failure failure) => Apply(failure.ProblemField, failure.ProblemValue, out _) != RuleAction.None;
 }

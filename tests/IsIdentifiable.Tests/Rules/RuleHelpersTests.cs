@@ -34,7 +34,7 @@ internal class RuleHelpersTests
             };
 
         // Act
-        var serialized = RuleHelpers.Serialize(rule);
+        var serialized = RegexRuleHelpers.Serialize(rule);
 
         // Assert
         Assert.AreEqual(string.Join(Environment.NewLine, expectedLines), serialized);
@@ -59,7 +59,7 @@ internal class RuleHelpersTests
             };
 
         // Act
-        var serialized = RuleHelpers.SerializeWithComment(rule, now);
+        var serialized = RegexRuleHelpers.SerializeWithComment(rule, now);
 
         // Assert
         Assert.AreEqual(string.Join(Environment.NewLine, expectedLines), serialized);
@@ -75,7 +75,7 @@ internal class RuleHelpersTests
         if (createIfMissing)
         {
             // Act
-            RuleHelpers.LoadFrom(fi, createIfMissing);
+            RegexRuleHelpers.LoadFrom(fi, createIfMissing);
 
             // Assert
             Assert.IsTrue(fi.Exists);
@@ -87,7 +87,7 @@ internal class RuleHelpersTests
             Assert.Throws(
                 Is.TypeOf<FileNotFoundException>()
                 .And.Message.Contains("t does not exist"),
-                () => RuleHelpers.LoadFrom(fi, createIfMissing)
+                () => RegexRuleHelpers.LoadFrom(fi, createIfMissing)
             );
         }
     }
@@ -100,7 +100,7 @@ internal class RuleHelpersTests
         fi.Create();
 
         // Act
-        var rules = RuleHelpers.LoadFrom(fi, createIfMissing: false);
+        var rules = RegexRuleHelpers.LoadFrom(fi, createIfMissing: false);
 
         // Assert
         Assert.AreEqual(new List<IRegexRule>(), rules);
@@ -122,7 +122,7 @@ internal class RuleHelpersTests
             Is.TypeOf<InvalidDataException>()
             .And.Message.Contains("Invalid rules content in file")
             .And.Message.Contains("t.md"),
-            () => RuleHelpers.LoadFrom(fi, createIfMissing: false)
+            () => RegexRuleHelpers.LoadFrom(fi, createIfMissing: false)
         );
     }
 
@@ -153,7 +153,7 @@ internal class RuleHelpersTests
         };
 
         // Act
-        var rules = RuleHelpers.LoadFrom(fi, createIfMissing: false);
+        var rules = RegexRuleHelpers.LoadFrom(fi, createIfMissing: false);
 
         // Assert
         Assert.AreEqual(1, rules.Count);
