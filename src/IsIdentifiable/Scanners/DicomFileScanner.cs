@@ -303,14 +303,6 @@ public class DicomFileScanner : ResourceScannerBase, IFileScanner
             // An internal error should cause IsIdentifiable to exit
             Logger.Info(e, $"Could not run Tesseract on '{fi.FullName}'");
             throw new ApplicationException($"Could not run Tesseract on '{fi.FullName}'", e);
-
-            // OR add a message to the report saying we failed to run OCR
-            //string problemField = "PixelData";
-            //string text = "Error running OCR on pixel data: "+e;
-            //var f = factory.FailureFrom(fi, dicomFile, text, problemField, new[] { new FailurePart(text, FailureClassification.PixelText) });
-            //NotifyNewFailure(f);
-            // XXX do we need this?
-            //_tesseractReport.FoundPixelData(fi, sopInstanceUID, pixelFormat, processedPixelFormat, studyInstanceUID, seriesInstanceUID, modality, imageType, meanConfidence, text.Length, text, rotationIfAny);
         }
     }
 

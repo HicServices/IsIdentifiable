@@ -19,7 +19,6 @@ namespace IsIdentifiable.Scanners;
 public class RelationalDatabaseScanner : ResourceScannerBase
 {
     private readonly DbConnection _dbConnection;
-
     private readonly TopXResponse? _topXResponse;
     private readonly DiscoveredDatabase _database;
 
