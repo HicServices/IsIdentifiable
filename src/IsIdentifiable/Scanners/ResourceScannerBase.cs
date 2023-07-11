@@ -160,21 +160,15 @@ public abstract class ResourceScannerBase : IDisposable, IResourceScanner
         {
             RegexRule irule => irule.Action switch
             {
-                RuleAction.None => -6000,
-                //ignore rules float to the top
-                RuleAction.Ignore => 100,
-                //then consider the report explicit rules (by pattern)
-                RuleAction.Report => 0,
+                RuleAction.Ignore => int.MaxValue,
+                RuleAction.Report => 2,
                 _ => throw new ArgumentOutOfRangeException(nameof(arg), $"Invalid action {irule.Action} for {nameof(RegexRule)} {arg}")
             },
+            ConsensusRule => 1,
             //socket rules sink to the bottom
-            SocketRule => -5000,
-            //ConsensusRules should sink to the bottom but just above SocketRules (if any)
-            ConsensusRule => -3000,
-            _ => -50
+            SocketRule => 0,
+            _ => throw new ArgumentException($"No case for {arg.GetType()}")
         };
-
-        //some odd custom rule type that is not a socket or basic rule, do them after the regular reports but before sockets
     }
 
     /// <summary>

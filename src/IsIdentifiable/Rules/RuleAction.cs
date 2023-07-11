@@ -1,4 +1,4 @@
-﻿namespace IsIdentifiable.Rules;
+namespace IsIdentifiable.Rules;
 
 /// <summary>
 /// Describes what action should be taken by IsIdentifiable when evaluating
@@ -7,9 +7,9 @@
 public enum RuleAction
 {
     /// <summary>
-    /// Do not undertake any action e.g. if the rule does not apply to a given value
+    /// Unused
     /// </summary>
-    None,
+    None = 0,
 
     /// <summary>
     /// The value should be Allowlisted and ignored by any downstream classifiers that might
@@ -21,5 +21,5 @@ public enum RuleAction
     /// The value violates system rules and likely contains identifiable data.  It should be reported
     /// as a failure.
     /// </summary>
-    Report
+    Report,
 }
