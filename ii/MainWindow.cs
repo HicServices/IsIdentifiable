@@ -87,7 +87,7 @@ G - creates a regex pattern that matches only the failing part(s)
         Menu = new MenuBar(new MenuBarItem[] {
             new("_File (F9)", new MenuItem [] {
                 new("_Open Report",null, OpenReport),
-                new("_Export 'Outstanding Failures'", null, ExportOutstandingFailures),
+                new("_Export Remaining Files", null, ExportRemainingFiles),
                 new("_Quit", null, static () => Application.RequestStop()),
             }),
             new("_Options", new MenuItem [] {
@@ -433,22 +433,28 @@ G - creates a regex pattern that matches only the failing part(s)
         BeginNext();
     }
 
-    private void ExportOutstandingFailures()
+    private void ExportRemainingFiles()
     {
-        if (rulesView.OutstandingFiles == null)
+        if (rulesView.RemainingFiles == null)
         {
             Helpers.ShowMessage("Error", "You must evaluate the rules on a report first.");
             return;
         }
 
         var now = DateTime.UtcNow.ToString("s").Replace(':', '-');
-        var fileName = $"OutstandingFiles-{now}.csv";
+        var fileName = $"ii-RemainingFiles-{now}.csv";
         using var sw = new StreamWriter(fileName);
 
-        foreach (var file in rulesView.OutstandingFiles)
-            sw.WriteLine(file);
+        sw.WriteLine("File,Reason");
 
-        Helpers.ShowMessage("Complete", $"Wrote {rulesView.OutstandingFiles.Count} unique item(s) to {fileName}");
+        var count = 0;
+        foreach (var record in rulesView.RemainingFiles.Distinct().OrderBy(x => x))
+        {
+            sw.WriteLine(record);
+            ++count;
+        }
+
+        Helpers.ShowMessage("Complete", $"Wrote {count} unique item(s) to {fileName}");
     }
 
     private void OpenReport()

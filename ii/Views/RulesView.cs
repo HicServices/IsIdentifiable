@@ -17,7 +17,7 @@ class RulesView : View
     public IgnoreRuleGenerator? Ignorer { get; private set; }
     public RowUpdater? Updater { get; private set; }
 
-    public List<string>? OutstandingFiles { get; private set; }
+    public List<string>? RemainingFiles { get; private set; }
 
     private readonly TreeView _treeView;
 
@@ -441,6 +441,7 @@ class RulesView : View
         var max = CurrentReport.Failures.Length;
         var lockObj = new object();
 
+        var remainingFiles = new ConcurrentBag<string>();
 
         var result = Parallel.ForEach(CurrentReport.Failures,
             (f) =>
@@ -452,6 +453,9 @@ class RulesView : View
 
                 var ignoreRule = Ignorer.Rules.FirstOrDefault(r => r.Apply(f.ProblemField, f.ProblemValue, out _) != RuleAction.None);
                 var updateRule = Updater.Rules.FirstOrDefault(r => r.Apply(f.ProblemField, f.ProblemValue, out _) != RuleAction.None);
+
+                if (updateRule != null)
+                    remainingFiles.Add($"{f.Resource},UpdateRule");
 
                 // record how often each reviewer rule was used with a failure
                 foreach (var r in new[] { ignoreRule, updateRule }.Where(r => r is not null).Cast<RegexRule>())
@@ -486,11 +490,15 @@ class RulesView : View
                             return v;
                         });
                     }
+
+                    remainingFiles.Add($"{f.Resource},NotCovered");
                 }
             });
 
         if (!result.IsCompleted)
             throw new OperationCanceledException();
+
+        RemainingFiles = remainingFiles.ToList();
 
         SetProgress(progress, textProgress, done, max);
 
@@ -538,8 +546,6 @@ class RulesView : View
                 .OrderByDescending(v => v.Failures.Sum(f => f.NumberOfTimesReported))
                 .Cast<ITreeNode>()
                 .ToList();
-
-        OutstandingFiles = outstandingFailures.Select(x => x.Value.Failure.Resource).Distinct().ToList();
     }
 
     private static void SetProgress(ProgressBar pb, View tp, int done, int max)
