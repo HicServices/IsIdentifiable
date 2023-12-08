@@ -2,6 +2,7 @@ using IsIdentifiable.Failures;
 using IsIdentifiable.Rules;
 using MongoDB.Driver.Linq;
 using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -154,5 +155,33 @@ internal class PartPatternFilterRuleTests
 
         // Assert
         Assert.True(ruleCoversFailurePart);
+    }
+
+    [Test]
+    public void Constructor_WordBefore_StringStartOrEnd_ThrowsException()
+    {
+        Assert.Throws<ArgumentException>(
+            () => new PartPatternFilterRule()
+            {
+                IfPartPattern = "^Test$",
+                IfColumn = "TextValue",
+                Action = RuleAction.Ignore,
+                WordBefore = "^(2|3)",
+            }
+        );
+    }
+
+    [Test]
+    public void Constructor_WordAfter_StringStartOrEnd_ThrowsException()
+    {
+        Assert.Throws<ArgumentException>(
+            () => new PartPatternFilterRule()
+            {
+                IfPartPattern = "^Test$",
+                IfColumn = "TextValue",
+                Action = RuleAction.Ignore,
+                WordAfter = "^(2|3)",
+            }
+        );
     }
 }

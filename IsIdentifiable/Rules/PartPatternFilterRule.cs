@@ -40,9 +40,34 @@ public class PartPatternFilterRule : RegexRule
         }
     }
 
-    public string WordBefore { get; set; }
+    private static readonly string[] _wordSeparators = new[] { @"\s", "-" };
+    private static readonly string _wordSeparatorRegexPart = string.Join('|', _wordSeparators);
 
-    public string WordAfter { get; set; }
+    private string _wordBefore;
+    public string WordBefore
+    {
+        get => _wordBefore;
+        set
+        {
+            if (value.Contains('^') || value.Contains('$'))
+                throw new ArgumentException("WordBefore should not contain '^' or '$'");
+
+            _wordBefore = value;
+        }
+    }
+
+    private string _wordAfter;
+    public string WordAfter
+    {
+        get => _wordAfter;
+        set
+        {
+            if (value.Contains('^') || value.Contains('$'))
+                throw new ArgumentException("WordAfter should not contain '^' or '$'");
+
+            _wordAfter = value;
+        }
+    }
 
     private Regex? _wordBeforeRegex;
     private Regex? _wordAfterRegex;
@@ -84,7 +109,7 @@ public class PartPatternFilterRule : RegexRule
         if (!string.IsNullOrWhiteSpace(WordBefore))
         {
             var problemValueUpToOffset = problemValue[..(failurePart.Offset + failurePart.Word.Length)];
-            _wordBeforeRegex ??= new Regex(@$"\b{WordBefore}(\s|-)+{IfPartPattern.TrimStart('^')}", (CaseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase) | RegexOptions.Compiled);
+            _wordBeforeRegex ??= new Regex(@$"\b{WordBefore}({_wordSeparatorRegexPart})+{IfPartPattern.TrimStart('^')}", (CaseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase) | RegexOptions.Compiled);
             matchesBefore = _wordBeforeRegex.Matches(problemValueUpToOffset).Any();
         }
 
@@ -92,7 +117,7 @@ public class PartPatternFilterRule : RegexRule
         if (!string.IsNullOrWhiteSpace(WordAfter))
         {
             var problemValueFromOffset = problemValue[failurePart.Offset..];
-            _wordAfterRegex ??= new Regex(@$"{IfPartPattern.TrimEnd('$')}(\s|-)+{WordAfter}\b", (CaseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase) | RegexOptions.Compiled);
+            _wordAfterRegex ??= new Regex(@$"{IfPartPattern.TrimEnd('$')}({_wordSeparatorRegexPart})+{WordAfter}\b", (CaseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase) | RegexOptions.Compiled);
             matchesAfter = _wordAfterRegex.Matches(problemValueFromOffset).Any();
         }
 
